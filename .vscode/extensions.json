@@ -1,0 +1,12 @@
+{
+    "recommendations": [
+        "zeshuaro.vscode-python-poetry",
+        "donjayamanne.python-extension-pack",
+        "charliermarsh.ruff",
+        "esbenp.prettier-vscode",
+        "tamasfe.even-better-toml",
+        "editorconfig.editorconfig",
+        "formulahendry.docker-extension-pack",
+        "sourcegraph.cody-ai"
+    ]
+}
