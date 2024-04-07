@@ -1,9 +1,8 @@
 import consumption_history as consumption_history
 
-
 def main():
-    eredes_username, _ = consumption_history.get_credentials()
-    print(eredes_username)
+    url = consumption_history.download()
+    print(f"{url = }")
 
 
 if __name__ == "__main__":
