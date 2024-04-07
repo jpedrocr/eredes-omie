@@ -161,3 +161,4 @@ cython_debug/
 
 # Git Config
 .gitconfig
+.ghtoken
