@@ -1,6 +1,7 @@
 import os
 import time
 
+import months
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -9,7 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 
-def get_driver() -> webdriver.Remote:
+def get_driver(debug: bool = False) -> webdriver.Remote:
     """
     Connects to a Remote WebDriver and returns the driver instance.
 
@@ -24,8 +25,10 @@ def get_driver() -> webdriver.Remote:
     # Creating a FirefoxOptions object
     options = webdriver.FirefoxOptions()
 
-    # Adding the "--headless" argument to the options
-    options.add_argument("--headless")
+    # If not in debug mode
+    if not debug:
+        # Adding the "--headless" argument to the options
+        options.add_argument("--headless")
 
     driver = None
     try:
@@ -126,6 +129,22 @@ def navigate_to_history(driver: webdriver.Remote) -> None:
     ).click()
 
 
+def select_month(driver: webdriver.Remote, month: str) -> None:
+    """Navigates to the selected month."""
+    find_element(
+        driver=driver,
+        by=By.XPATH,
+        value="//nz-date-picker[@id='period']/div/input",
+        delay=120,
+    ).click()
+    find_element(
+        driver=driver,
+        by=By.XPATH,
+        value=f"//tr/div[contains(.,'{month}')]",
+        delay=120,
+    ).click()
+
+
 def export_to_excel(driver: webdriver.Remote) -> None:
     """Exports the consumption history to Excel."""
     find_element(
@@ -140,7 +159,7 @@ def save_screenshot(driver: webdriver.Remote) -> None:
             file.write(driver.get_screenshot_as_png())
 
 
-def download() -> None:
+def download(previous_month: bool = False, debug: bool = False) -> None:
     # Load environment variables
     load_dotenv()
 
@@ -151,7 +170,7 @@ def download() -> None:
     eredes_consumption_history_url = os.getenv("EREDES_CONSUMPTION_HISTORY_URL") or ""
 
     # Get the web driver
-    driver = get_driver()
+    driver = get_driver(debug)
 
     # If the driver is None, exit the function
     if driver is None:
@@ -172,6 +191,11 @@ def download() -> None:
 
         # Navigate to the consumption history page
         navigate_to_history(driver)
+        
+        # If a specific month is provided
+        if previous_month:
+            # Select the previous month on the webpage
+            select_month(driver, months.last_month())
 
         # Export the consumption history to Excel
         export_to_excel(driver)
