@@ -162,3 +162,6 @@ cython_debug/
 # Git Config
 .gitconfig
 .github_token
+
+# Data files
+data/
