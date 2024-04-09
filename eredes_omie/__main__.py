@@ -8,10 +8,10 @@ def main():
     """
     # Call the download function from the consumption_history module
     # This function is expected to return the URL of the downloaded data
-    url = ch.download()
+    ch.download()
 
     # Print the URL
-    print(f"Downloaded data is located at: {url}")
+    print("Downloaded data.")
 
 
 # This condition checks if this script is being run directly or imported by another script

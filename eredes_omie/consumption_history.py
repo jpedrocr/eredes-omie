@@ -9,51 +9,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 
-def find_element(
-    driver: webdriver.Remote, by: By, value: str, delay: int = 5
-) -> WebElement:
-    """
-    Finds an element on the web page using the specified driver and element locator.
-
-    Args:
-        driver (webdriver.Remote): The Selenium WebDriver instance to use.
-        by (By): The locator strategy (e.g., By.XPATH, By.CSS_SELECTOR).
-        value (str): The locator value.
-        delay (int, optional): The maximum number of seconds to wait for the
-        element to be present on the page. Defaults to 5.
-
-    Returns:
-        WebElement: The found element.
-    """
-    # Creating a WebDriverWait object with the specified delay time
-    wait = WebDriverWait(driver, delay)
-
-    # Using the until method of the WebDriverWait object to wait until the element is found
-    element = wait.until(EC.presence_of_element_located((by, value)))
-
-    # Returning the found element
-    return element
-
-
-def get_credentials() -> tuple[str, str]:
-    """
-    Retrieves the E-REDES username and password from environment variables.
-
-    Returns:
-        tuple[str, str]: A tuple containing the E-REDES username and password.
-    """
-    # Getting the E-REDES username from the "EREDES_USERNAME" environment variable
-    # If the environment variable is not set, return an empty string
-    eredes_username = os.getenv("EREDES_USERNAME", "")
-
-    # Getting the E-REDES password from the "EREDES_PASSWORD" environment variable
-    # If the environment variable is not set, return an empty string
-    eredes_password = os.getenv("EREDES_PASSWORD", "")
-
-    # Return a tuple containing the E-REDES username and password
-    return eredes_username, eredes_password
-
-
 def get_driver() -> webdriver.Remote:
     """
     Connects to a Remote WebDriver and returns the driver instance.
@@ -91,35 +46,94 @@ def get_driver() -> webdriver.Remote:
         raise e
 
 
-def access_eredes_login_page(driver):
+def get_credentials() -> tuple[str, str]:
+    """
+    Retrieves the E-REDES username and password from environment variables.
+
+    Returns:
+        tuple[str, str]: A tuple containing the E-REDES username and password.
+    """
+    # Getting the E-REDES username from the "EREDES_USERNAME" environment variable
+    # If the environment variable is not set, return an empty string
+    eredes_username = os.getenv("EREDES_USERNAME", "")
+
+    # Getting the E-REDES password from the "EREDES_PASSWORD" environment variable
+    # If the environment variable is not set, return an empty string
+    eredes_password = os.getenv("EREDES_PASSWORD", "")
+
+    # Return a tuple containing the E-REDES username and password
+    return eredes_username, eredes_password
+
+
+def find_element(
+    driver: webdriver.Remote, by: By, value: str, delay: int = 5
+) -> WebElement:
+    """
+    Finds an element on the web page using the specified driver and element locator.
+
+    Args:
+        driver (webdriver.Remote): The Selenium WebDriver instance to use.
+        by (By): The locator strategy (e.g., By.XPATH, By.CSS_SELECTOR).
+        value (str): The locator value.
+        delay (int, optional): The maximum number of seconds to wait for the
+        element to be present on the page. Defaults to 5.
+
+    Returns:
+        WebElement: The found element.
+    """
+    # Creating a WebDriverWait object with the specified delay time
+    wait = WebDriverWait(driver, delay)
+
+    # Using the until method of the WebDriverWait object to wait until the element is found
+    element = wait.until(EC.presence_of_element_located((by, value)))
+
+    # Returning the found element
+    return element
+
+
+def access_eredes_login_page(driver: webdriver.Remote) -> None:
     """Accesses the E-Redes login page."""
     # Click on the 'Reject All' button
-    find_element(driver, (By.XPATH, "//button[contains(.,'Rejeitar Todos')]")).click()
+    find_element(
+        driver=driver, by=By.XPATH, value="//button[contains(.,'Rejeitar Todos')]"
+    ).click()
 
     # Click on the second div inside a list item
-    find_element(driver, (By.XPATH, "//li/div[2]/div")).click()
-
-
-def login_to_eredes(driver, eredes_username, eredes_password):
-    """Logs into Eredes with the provided username and password."""
-    find_element(driver, (By.ID, "username")).send_keys(eredes_username)
-    find_element(driver, (By.ID, "labelPassword")).send_keys(eredes_password)
-    find_element(driver, (By.XPATH, "//button[contains(.,'Entrar')]")).click()
-
-
-def navigate_to_history(driver):
-    """Navigates to the consumption history page."""
-    find_element(driver, (By.XPATH, "//nz-card/div/div[2]/div")).click()
-
-
-def export_to_excel(driver):
-    """Exports the consumption history to Excel."""
     find_element(
-        driver, (By.XPATH, "//strong[contains(.,'Exportar excel')]"), 120
+        driver=driver, by=By.XPATH, value="//li/div[2]/div"
     ).click()
 
 
-def save_screenshot(driver):
+def login_to_eredes(
+    driver: webdriver.Remote, eredes_username: str, eredes_password: str
+) -> None:
+    """Logs into Eredes with the provided username and password."""
+    find_element(
+        driver=driver, by=By.ID, value="username"
+    ).send_keys(eredes_username)
+    find_element(
+        driver=driver, by=By.ID, value="labelPassword"
+    ).send_keys(eredes_password)
+    find_element(
+        driver=driver, by=By.XPATH, value="//button[contains(.,'Entrar')]"
+    ).click()
+
+
+def navigate_to_history(driver: webdriver.Remote) -> None:
+    """Navigates to the consumption history page."""
+    find_element(
+        driver=driver, by=By.XPATH, value="//nz-card/div/div[2]/div", delay=120
+    ).click()
+
+
+def export_to_excel(driver: webdriver.Remote) -> None:
+    """Exports the consumption history to Excel."""
+    find_element(
+        driver=driver, by=By.XPATH, value="//strong[contains(.,'Exportar excel')]", delay=120
+    ).click()
+
+
+def save_screenshot(driver: webdriver.Remote) -> None:
     """Saves a screenshot of the current page if the file exists."""
     if os.path.exists("./data/page_status.png"):
         with open("./data/page_status.png", "wb") as file:
@@ -146,6 +160,9 @@ def download() -> None:
     try:
         # Open the Eredes consumption history URL
         driver.get(eredes_consumption_history_url)
+        
+        if driver.current_url != eredes_consumption_history_url:
+            raise Exception("Invalid URL")
 
         # Access the E-Redes login page
         access_eredes_login_page(driver)
