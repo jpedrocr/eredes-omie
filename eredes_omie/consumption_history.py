@@ -129,20 +129,33 @@ def navigate_to_history(driver: webdriver.Remote) -> None:
     ).click()
 
 
-def select_month(driver: webdriver.Remote, month: str) -> None:
+def select_month(driver: webdriver.Remote, month: int) -> None:
     """Navigates to the selected month."""
+    # Creating a WebDriverWait object with the specified delay time    # Creating a WebDriverWait object with the specified delay time
+    wait = WebDriverWait(driver, 120)
+
+    # Using the until method of the WebDriverWait object to wait until the element is found
+    wait.until(
+        EC.element_to_be_clickable(
+            (
+                By.XPATH,
+                "//nz-date-picker[@id='period']/div/input",
+            )
+        )
+    ).click()
+    # if month == 12:
+    #     find_element(
+    #         driver=driver, by=By.XPATH, value="//month-header/div/button[1]"
+    #     ).click()
+    # # //month-table/table/tbody/tr[4]/td[3]/div
+
     find_element(
         driver=driver,
         by=By.XPATH,
-        value="//nz-date-picker[@id='period']/div/input",
+        value=f"//td[{month}]/div",
         delay=120,
     ).click()
-    find_element(
-        driver=driver,
-        by=By.XPATH,
-        value=f"//tr/div[contains(.,'{month}')]",
-        delay=120,
-    ).click()
+    time.sleep(5)
 
 
 def export_to_excel(driver: webdriver.Remote) -> None:
@@ -195,7 +208,7 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
         # If a specific month is provided
         if previous_month:
             # Select the previous month on the webpage
-            select_month(driver, months.last_month())
+            select_month(driver, months.get_last_month())
 
         # Export the consumption history to Excel
         export_to_excel(driver)

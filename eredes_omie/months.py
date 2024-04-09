@@ -1,34 +1,18 @@
-# Import the datetime module
 from datetime import datetime
 
-# Define month constants with names in English and strings in Portuguese
-MONTHS = {
-    1: "jan.",
-    2: "fev.",
-    3: "mar.",
-    4: "abr.",
-    5: "mai.",
-    6: "jun.",
-    7: "jul.",
-    8: "ago.",
-    9: "set.",
-    10: "out.",
-    11: "nov.",
-    12: "dez.",
-}
 
-
-def last_month() -> str:
+def get_last_month() -> int:
     """
-    Returns the Portuguese abbreviation of the last month.
-
-    The function gets the current month number and uses it to return the corresponding Portuguese abbreviation from the MONTHS dictionary.
+    This function returns the last month as an integer.
+    If the current month is January (1), it returns December (12).
+    For all other months, it simply returns the previous month.
     """
-    # Get the current month number
+
+    # Get the current month as an integer (1-12)
     current_month = datetime.now().month
 
-    # Calculate the last month number
+    # If the current month is not January, subtract 1 to get the last month.
+    # If the current month is January, the last month is December.
     last_month = current_month - 1 if current_month > 1 else 12
 
-    # Return the Portuguese abbreviation of the last month
-    return MONTHS[last_month]
+    return last_month
