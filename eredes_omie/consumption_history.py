@@ -1,3 +1,4 @@
+from datetime import date, datetime
 import os
 import time
 
@@ -102,21 +103,17 @@ def access_eredes_login_page(driver: webdriver.Remote) -> None:
     ).click()
 
     # Click on the second div inside a list item
-    find_element(
-        driver=driver, by=By.XPATH, value="//li/div[2]/div"
-    ).click()
+    find_element(driver=driver, by=By.XPATH, value="//li/div[2]/div").click()
 
 
 def login_to_eredes(
     driver: webdriver.Remote, eredes_username: str, eredes_password: str
 ) -> None:
     """Logs into Eredes with the provided username and password."""
-    find_element(
-        driver=driver, by=By.ID, value="username"
-    ).send_keys(eredes_username)
-    find_element(
-        driver=driver, by=By.ID, value="labelPassword"
-    ).send_keys(eredes_password)
+    find_element(driver=driver, by=By.ID, value="username").send_keys(eredes_username)
+    find_element(driver=driver, by=By.ID, value="labelPassword").send_keys(
+        eredes_password
+    )
     find_element(
         driver=driver, by=By.XPATH, value="//button[contains(.,'Entrar')]"
     ).click()
@@ -129,39 +126,72 @@ def navigate_to_history(driver: webdriver.Remote) -> None:
     ).click()
 
 
-def select_month(driver: webdriver.Remote, month: int) -> None:
-    """Navigates to the selected month."""
-    # Creating a WebDriverWait object with the specified delay time    # Creating a WebDriverWait object with the specified delay time
+def select_month(
+    driver: webdriver.Remote, month: int, year: int = date.today().year
+) -> None:
+    """Navigates to the selected month and year on a webpage using Selenium WebDriver.
+
+    Args:
+        driver (webdriver.Remote): The WebDriver instance to interact with the webpage.
+        month (int): The month to navigate to (1 for January, 12 for December).
+        year (int, optional): The year to navigate to. Defaults to the current year.
+
+    Returns:
+        None
+    """
+    # Calculate the row and column of the month in the date picker
+    row = (month - 1) // 3 + 1
+    col = (month - 1) % 3 + 1
+
+    # Initialize a WebDriverWait instance with a timeout of 120 seconds
     wait = WebDriverWait(driver, 120)
 
-    # Using the until method of the WebDriverWait object to wait until the element is found
+    # Wait until the month input field is clickable, then click it
     wait.until(
         EC.element_to_be_clickable(
-            (
-                By.XPATH,
-                "//nz-date-picker[@id='period']/div/input",
-            )
+            (By.XPATH, "//nz-date-picker[@id='period']/div/input")
         )
     ).click()
-    # if month == 12:
-    #     find_element(
-    #         driver=driver, by=By.XPATH, value="//month-header/div/button[1]"
-    #     ).click()
-    # # //month-table/table/tbody/tr[4]/td[3]/div
 
+    # Get the currently selected year
+    selected_year = date.today().year
+
+    # Loop until the selected year matches the desired year
+    while year != selected_year:
+        # Get the currently selected year from the year button
+        selected_year = int(
+            find_element(
+                driver=driver, by=By.XPATH, value="//month-header/div/div/button"
+            ).text
+        )
+
+        # If the desired year is less than the selected year, click the previous year button
+        if year < selected_year:
+            find_element(
+                driver=driver, by=By.XPATH, value="//month-header/div/button[1]"
+            ).click()
+        # If the desired year is greater than the selected year, click the next year button
+        elif year > selected_year:
+            find_element(
+                driver=driver, by=By.XPATH, value="//month-header/div/button[4]"
+            ).click()
+
+    # Once the correct year is selected, click the desired month
     find_element(
-        driver=driver,
-        by=By.XPATH,
-        value=f"//td[{month}]/div",
-        delay=120,
+        driver=driver, by=By.XPATH, value=f"//tr[{row}]/td[{col}]/div", delay=120
     ).click()
+
+    # Wait for 5 seconds to ensure the month is fully loaded
     time.sleep(5)
 
 
 def export_to_excel(driver: webdriver.Remote) -> None:
     """Exports the consumption history to Excel."""
     find_element(
-        driver=driver, by=By.XPATH, value="//strong[contains(.,'Exportar excel')]", delay=120
+        driver=driver,
+        by=By.XPATH,
+        value="//strong[contains(.,'Exportar excel')]",
+        delay=120,
     ).click()
 
 
@@ -192,7 +222,7 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
     try:
         # Open the Eredes consumption history URL
         driver.get(eredes_consumption_history_url)
-        
+
         if driver.current_url != eredes_consumption_history_url:
             raise Exception("Invalid URL")
 
@@ -204,17 +234,33 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
 
         # Navigate to the consumption history page
         navigate_to_history(driver)
-        
+
         # If a specific month is provided
         if previous_month:
             # Select the previous month on the webpage
-            select_month(driver, months.get_last_month())
+            month = months.get_last_month()
+            select_month(driver, month["month"], month["year"])
 
-        # Export the consumption history to Excel
-        export_to_excel(driver)
+            # Export the consumption history to Excel
+            export_to_excel(driver)
+
+            # rename the file
+            os.rename(
+                f"./downloads/Consumos_{date.today():%Y%m%d}.xlsx",
+                f"./downloads/Consumos_{month['year']:04}{month['month']:02}.xlsx",
+            )
+        else:
+            # Export the consumption history to Excel
+            export_to_excel(driver)
+
+            # rename the file
+            os.rename(
+                f"./downloads/Consumos_{date.today():%Y%m%d}.xlsx",
+                f"./downloads/Consumos_{datetime.now():%Y%m%d%H%M%S}.xlsx",
+            )
 
         # Save a screenshot of the current page
-        save_screenshot(driver)
+        # save_screenshot(driver)
 
     except Exception as e:
         # Log the error

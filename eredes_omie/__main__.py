@@ -1,5 +1,6 @@
 # Import the consumption_history module
 import argparse
+from datetime import date
 import consumption_history as ch
 
 
@@ -7,9 +8,13 @@ def main(debug: bool) -> None:
     """
     Main function that orchestrates the download of consumption history and prints the URL.
     """
+
+    # If the current day is 2, download the previous month
+    if date.today().day == 2:
+        ch.download(previous_month=True, debug=debug)
+
     # Call the download function from the consumption_history module
-    # This function is expected to return the URL of the downloaded data
-    ch.download(previous_month=True, debug=debug)
+    ch.download(previous_month=False, debug=debug)
 
     # Print the URL
     print("Downloaded data.")
