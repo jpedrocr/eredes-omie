@@ -195,15 +195,6 @@ def export_to_excel(driver: webdriver.Remote) -> None:
     ).click()
 
 
-def save_screenshot(driver: webdriver.Remote) -> None:
-    """Saves a screenshot of the current page if the file exists."""
-    if os.path.exists("./data/errors/"):
-        with open(
-            f"./data/errors/page_status_{datetime.now():%Y%m%d%H%M%S}.png", "wb"
-        ) as file:
-            file.write(driver.get_screenshot_as_png())
-
-
 def download(previous_month: bool = False, debug: bool = False) -> None:
     """
     Downloads the consumption history from the Eredes website and exports it to an Excel file.
