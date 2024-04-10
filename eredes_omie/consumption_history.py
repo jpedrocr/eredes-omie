@@ -197,12 +197,26 @@ def export_to_excel(driver: webdriver.Remote) -> None:
 
 def save_screenshot(driver: webdriver.Remote) -> None:
     """Saves a screenshot of the current page if the file exists."""
-    if os.path.exists("./data/page_status.png"):
-        with open("./data/page_status.png", "wb") as file:
+    if os.path.exists("./data/errors/"):
+        with open(
+            f"./data/errors/page_status_{datetime.now():%Y%m%d%H%M%S}.png", "wb"
+        ) as file:
             file.write(driver.get_screenshot_as_png())
 
 
 def download(previous_month: bool = False, debug: bool = False) -> None:
+    """
+    Downloads the consumption history from the Eredes website and exports it to an Excel file.
+
+    If `previous_month` is `True`, the function will also download the consumption history for the previous month and save it to a file.
+
+    Args:
+        previous_month (bool): If `True`, the function will also download the consumption history for the previous month.
+        debug (bool): If `True`, the function will use a headless browser for debugging purposes.
+
+    Raises:
+        Exception: If there is an error downloading the consumption history.
+    """
     # Load environment variables
     load_dotenv()
 
@@ -235,6 +249,15 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
         # Navigate to the consumption history page
         navigate_to_history(driver)
 
+        # Export the consumption history to Excel
+        export_to_excel(driver)
+
+        # rename the file
+        os.rename(
+            f"./downloads/Consumos_{date.today():%Y%m%d}.xlsx",
+            f"./downloads/Consumos_{datetime.now():%Y%m%d%H%M%S}.xlsx",
+        )
+
         # If a specific month is provided
         if previous_month:
             # Select the previous month on the webpage
@@ -247,20 +270,8 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
             # rename the file
             os.rename(
                 f"./downloads/Consumos_{date.today():%Y%m%d}.xlsx",
-                f"./downloads/Consumos_{month['year']:04}{month['month']:02}.xlsx",
+                f"./data/consumption_history/Consumos_{month['year']:04}{month['month']:02}.xlsx",
             )
-        else:
-            # Export the consumption history to Excel
-            export_to_excel(driver)
-
-            # rename the file
-            os.rename(
-                f"./downloads/Consumos_{date.today():%Y%m%d}.xlsx",
-                f"./downloads/Consumos_{datetime.now():%Y%m%d%H%M%S}.xlsx",
-            )
-
-        # Save a screenshot of the current page
-        # save_screenshot(driver)
 
     except Exception as e:
         # Log the error
