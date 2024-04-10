@@ -1,6 +1,8 @@
 from datetime import date, datetime
+from glob import glob
 import os
 import time
+import pandas as pd
 
 import months
 from dotenv import load_dotenv
@@ -279,3 +281,41 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
 
     # Quit the driver
     driver.quit()
+
+
+def process_consumption_history() -> None:
+    """
+    Processes the consumption history data.
+    Loads all the Excel files in data/consumption_history into a Pandas DataFrame and saves it to a CSV file.
+    """
+    # Get the list of consumption history files
+    files = sorted(glob("/workspace/data/consumption_history/*.xlsx"))
+
+    # Initialize a list of dataframes
+    dfs = []
+
+    # Loop through the files
+    for file in files:
+        print(f"Processing {file}")
+        # Load the file into a dataframe
+        df = pd.read_excel(
+            file,
+            sheet_name="Leituras",
+            dtype=str,
+            engine="openpyxl",
+            skiprows=14,
+        )
+
+        # Append the dataframe to the list
+        dfs.append(df)
+
+    # Concatenate the dataframes
+    df = pd.concat(dfs)
+
+    df.drop(df.columns[[2, 3, 4, 5, 7, 9]], axis=1, inplace=True)
+
+    # Save the dataframe to a CSV file
+    df.to_csv("./data/consumption_history.csv", index=False)
+
+    # Print the number of rows and columns in the dataframe
+    print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")

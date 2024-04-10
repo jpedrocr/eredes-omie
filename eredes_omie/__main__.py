@@ -1,5 +1,5 @@
 # Import the consumption_history module
-import argparse
+# import argparse
 from datetime import date
 import consumption_history as ch
 
@@ -23,7 +23,8 @@ def main(debug: bool) -> None:
 # This condition checks if this script is being run directly or imported by another script
 # If it is run directly, it calls the main function
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--debug", action="store_true", help="Turn on debug mode")
-    args = parser.parse_args()
-    main(args.debug)
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("--debug", action="store_true", help="Turn on debug mode")
+    # args = parser.parse_args()
+    # main(args.debug)
+    ch.process_consumption_history()
