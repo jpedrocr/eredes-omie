@@ -282,6 +282,7 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
     # Quit the driver
     driver.quit()
 
+# Fix, improve, refactor and add comments, as needed, in English
 
 def process_consumption_history() -> None:
     """
@@ -311,11 +312,11 @@ def process_consumption_history() -> None:
     # Concatenate the dataframes
     df = pd.concat(dfs)
 
+    # Process the dataframe and save it to a CSV file
     df = process_and_save_dataframe(df)
 
     # Print the number of rows and columns in the dataframe
     print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
-
 
 def process_and_save_dataframe(df: pd.DataFrame = None) -> pd.DataFrame | None:
     """
