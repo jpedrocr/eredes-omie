@@ -1,3 +1,3 @@
 # eredes-omie
 
-<!-- # Improve, refactor and add comments, as needed, in English -->
+<!-- # Fix, improve, refactor and add comments, as needed, in English -->
