@@ -2,6 +2,7 @@
 # import argparse
 from datetime import date
 import consumption_history as ch
+import losses_profiles as lp
 
 
 def main(debug: bool) -> None:
@@ -27,4 +28,5 @@ if __name__ == "__main__":
     # parser.add_argument("--debug", action="store_true", help="Turn on debug mode")
     # args = parser.parse_args()
     # main(args.debug)
-    ch.process_consumption_history()
+    # ch.process_consumption_history()
+    lp.get_losses_profiles()
