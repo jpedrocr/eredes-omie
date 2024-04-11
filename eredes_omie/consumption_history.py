@@ -285,7 +285,7 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
 
 def process_consumption_history() -> None:
     """
-    Processes the consumption history data.
+    Processes the consumption history monthly data.
     Loads all the Excel files in data/consumption_history into a Pandas DataFrame and saves it to a CSV file.
     """
     # Get the list of consumption history files
@@ -301,7 +301,6 @@ def process_consumption_history() -> None:
         df = pd.read_excel(
             file,
             sheet_name="Leituras",
-            dtype=str,
             engine="openpyxl",
             skiprows=14,
         )
@@ -312,10 +311,58 @@ def process_consumption_history() -> None:
     # Concatenate the dataframes
     df = pd.concat(dfs)
 
-    df.drop(df.columns[[2, 3, 4, 5, 7, 9]], axis=1, inplace=True)
+    df = process_and_save_dataframe(df)
+
+    # Print the number of rows and columns in the dataframe
+    print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
+
+
+def process_and_save_dataframe(df: pd.DataFrame = None) -> pd.DataFrame | None:
+    """
+    Processes the consumption history dataframe, and saves it to a CSV file.
+    """
+
+    if df is None:
+        # If the dataframe is not provided as an argument, load
+        # the dataframe from a CSV file
+        df = pd.read_csv("./data/consumption_history.csv")
+    elif len(df.columns) == 10:
+        # If the dataframe is provided as an argument, and it has
+        # 10 columns, drop the columns that are not needed
+        df.drop(df.columns[[2, 3, 4, 5, 7, 9]], axis=1, inplace=True)
+
+    # Set the list of column names
+    df.columns = [
+        "date",
+        "time",
+        "consumption_kwh",
+        "injection_kwh",
+    ]
+
+    # Convert the date and time columns to datetime object in column datetime
+    df["datetime"] = pd.to_datetime(df["date"] + " " + df["time"])
+
+    # Set the datetime column as UTC
+    df["datetime"] = df["datetime"].dt.tz_localize("UTC")
+
+    # Convert from kW per quarter to kW per hour
+    df["consumption_kwh"] = df["consumption_kwh"] / 4
+    df["injection_kwh"] = df["injection_kwh"] / 4
+
+    # Add a new column with the sum of the consumption and injection columns
+    df["total_kwh"] = df["consumption_kwh"] - df["injection_kwh"]
+
+    # Format the total_kwh column to 3 decimal places
+    df["total_kwh"] = df["total_kwh"].apply(lambda x: round(x, 3))
+
+    # Set only the final columns
+    df = df[["datetime", "consumption_kwh", "injection_kwh", "total_kwh"]]
+
+    # Print the sum of the consumption and injection columns by year
+    print(df.groupby(df["datetime"].dt.year)["total_kwh"].sum())
 
     # Save the dataframe to a CSV file
     df.to_csv("./data/consumption_history.csv", index=False)
 
-    # Print the number of rows and columns in the dataframe
-    print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
+    # Return the dataframe
+    return df[["datetime", "consumption_kwh", "injection_kwh", "total_kwh"]]
