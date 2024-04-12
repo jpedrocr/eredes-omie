@@ -3,7 +3,7 @@
 import argparse
 from datetime import date
 from e_redes import consumption_history
-from omie import prices
+from omie import energy_prices
 from erse import losses_profiles
 from operators import repsol
 
@@ -41,7 +41,7 @@ def update_prices(debug: bool = False) -> None:
     """
     Update the prices.
     """
-    prices.update_prices()
+    energy_prices.update_prices()
     repsol.update_prices()
 
 

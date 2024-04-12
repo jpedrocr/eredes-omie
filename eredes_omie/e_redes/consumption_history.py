@@ -199,7 +199,7 @@ def export_to_excel(driver: webdriver.Remote) -> None:
 
 def download(previous_month: bool = False, debug: bool = False) -> None:
     """
-    Downloads the consumption history from the Eredes website and exports it to an Excel file.
+    Downloads the consumption history from the E-Redes website and exports it to an Excel file.
 
     If `previous_month` is `True`, the function will also download the consumption history for 
     the previous month and save it to a file.

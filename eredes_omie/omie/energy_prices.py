@@ -1,6 +1,70 @@
-import pandas as pd
 import glob
 import os
+from datetime import datetime, timedelta
+
+import pandas as pd
+import requests
+
+
+__check_start__ = datetime.fromisoformat("2024-04-01")
+__tomorrow__ = datetime.now() + timedelta(days=1)
+
+
+def download_prices(requested_date: datetime = __tomorrow__) -> None:
+    """
+    Downloads the prices data from the OMIE's website and saves it to a file.
+    """
+    # Convert requested date to the format YYYYMMDD
+    requested_date = requested_date.strftime("%Y%m%d")
+
+    # Define the URL
+    url = f"https://www.omie.es/en/file-download?parents%5B0%5D=marginalpdbcpt&filename=marginalpdbcpt_{requested_date}.1"
+    
+    print(f"Downloaded energy prices for date: {requested_date}")
+
+    # Send a GET request to the URL
+    response = requests.get(url)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Save the content to a file
+        with open(
+            f"/workspace/data/prices/marginalpdbcpt_{requested_date}.1", "wb"
+        ) as file:
+            file.write(response.content)
+    else:
+        print(f"Failed to download energy prices for date: {requested_date}")
+
+
+def check_and_download(
+    start_date: datetime = __check_start__, end_date: datetime = __tomorrow__
+) -> None:
+    """
+    Checks if the price data files for the given date range exist, and downloads the missing files.
+
+    Args:
+        start_date (datetime): The start date of the date range to check. Defaults to `__check_start__`.
+        end_date (datetime): The end date of the date range to check. Defaults to `__tomorrow__`.
+
+    Raises:
+        None
+    """
+    # Iterate over the dates from start_date to end_date
+    date = start_date
+    while date <= end_date:
+        # Convert date to the format YYYYMMDD
+        date_str = date.strftime("%Y%m%d")
+
+        # Define the file path
+        file_path = f"/workspace/data/prices/marginalpdbcpt_{date_str}.1"
+
+        # Check if the file exists
+        if not os.path.exists(file_path):
+            # If the file doesn't exist, download the data for this date
+            download_prices(date)
+
+        # Move to the next date
+        date += timedelta(days=1)
 
 
 def update_prices() -> pd.DataFrame:
@@ -14,6 +78,9 @@ def update_prices() -> pd.DataFrame:
     Returns:
         pd.DataFrame: The updated energy prices data.
     """
+    # Assure all available prices are downloaded
+    check_and_download()
+    
     # Get a list of all the files in the data folder
     files = sorted(glob.glob(os.path.join("/workspace/data/prices/", "*.1")))
 

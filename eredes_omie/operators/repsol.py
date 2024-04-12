@@ -1,6 +1,6 @@
 import pandas as pd
 import erse.losses_profiles as lp
-import omie.prices as pr
+import omie.energy_prices as pr
 
 def update_prices(
     prices: pd.DataFrame = None, losses_profiles: pd.DataFrame = None
@@ -33,12 +33,15 @@ def update_prices(
 
     # Calculates the final price per kWh including losses and fees
     df["€/kWh"] = (df["€/MWh"] / 1000 + 0) * (1 + df["losses_profile"]) * af + qfare
-
-    # Write the dataframe to a single csv file
-    df.to_csv("/workspace/data/repsol_prices.csv", index=False)
     
     # Set starting_datetime column dtype to datetime
     df["starting_datetime"] = pd.to_datetime(df["starting_datetime"])
+    
+    # Set the exporting columns
+    df = df[["starting_datetime", "€/kWh"]]
+
+    # Write the dataframe to a single csv file
+    df.to_csv("/workspace/data/repsol_prices.csv", index=False)
 
     # Group by year and calculate the maximum and minimum price
     max_min_prices = df.groupby(df["starting_datetime"].dt.year)["€/kWh"].agg(
@@ -48,4 +51,4 @@ def update_prices(
     # Print the maximum and minimum price for each year
     print(f"Repsol indexed prices per year (€/kWh):\n{max_min_prices}\n")
 
-    return df[["starting_datetime", "€/kWh"]]
+    return df
