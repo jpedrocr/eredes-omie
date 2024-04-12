@@ -4,7 +4,7 @@ import os
 import time
 import pandas as pd
 
-from months import last_month
+from .months import last_month
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By

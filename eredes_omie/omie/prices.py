@@ -68,16 +68,19 @@ def update_prices() -> pd.DataFrame:
 
     df.columns = ["starting_datetime", "€/MWh"]
 
+    # Set the 'starting_datetime' column as UTC
+    df["starting_datetime"] = df["starting_datetime"].dt.tz_localize("UTC")
+
     # Write the dataframe to a single csv file
     df.to_csv("/workspace/data/energy_prices.csv", index=False)
 
     # Group by year and calculate the maximum and minimum price
     max_min_prices = df.groupby(df["starting_datetime"].dt.year)["€/MWh"].agg(
-        ["max", "min"]
+        ["max", "min", "mean"]
     )
 
     # Print the maximum and minimum price for each year
-    print(max_min_prices)
+    print(f"Energy prices per year (€/MWh):\n{max_min_prices}\n")
 
     # Return the dataframe
     return df
@@ -91,7 +94,7 @@ def get_prices() -> pd.DataFrame:
         pd.DataFrame: A DataFrame containing the losses profiles data.
     """
     # Load the dataframe from a CSV file
-    df = pd.read_csv("./data/prices.csv")
+    df = pd.read_csv("/workspace/data/energy_prices.csv")
 
     # Return the dataframe
     return df

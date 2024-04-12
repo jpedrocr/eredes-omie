@@ -1,6 +1,6 @@
 import pandas as pd
-import eredes_omie.erse.losses_profiles as lp
-import eredes_omie.omie.prices as pr
+import erse.losses_profiles as lp
+import omie.prices as pr
 
 def update_prices(
     prices: pd.DataFrame = None, losses_profiles: pd.DataFrame = None
@@ -36,5 +36,16 @@ def update_prices(
 
     # Write the dataframe to a single csv file
     df.to_csv("/workspace/data/repsol_prices.csv", index=False)
+    
+    # Set starting_datetime column dtype to datetime
+    df["starting_datetime"] = pd.to_datetime(df["starting_datetime"])
+
+    # Group by year and calculate the maximum and minimum price
+    max_min_prices = df.groupby(df["starting_datetime"].dt.year)["€/kWh"].agg(
+        ["max", "min", "mean"]
+    )
+
+    # Print the maximum and minimum price for each year
+    print(f"Repsol indexed prices per year (€/kWh):\n{max_min_prices}\n")
 
     return df[["starting_datetime", "€/kWh"]]

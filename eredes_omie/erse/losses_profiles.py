@@ -48,14 +48,14 @@ def update_losses_profiles() -> pd.DataFrame:
     # Combine the 'date' and 'starting_time' to create a 'starting_datetime' column
     df["starting_datetime"] = df["date"] + df["starting_time"]
 
-    # Set the datetime column as UTC
+    # Set the 'starting_datetime' column as UTC
     df["starting_datetime"] = df["starting_datetime"].dt.tz_localize("UTC")
 
     # Set only the final columns
     df = df[["starting_datetime", "losses_profile"]]
 
     # Save the dataframe to a CSV file
-    df.to_csv("./data/losses_profiles.csv", index=False)
+    df.to_csv("/workspace/data/losses_profiles.csv", index=False)
 
     # Return the dataframe
     return df
@@ -69,7 +69,7 @@ def get_losses_profiles() -> pd.DataFrame:
         pd.DataFrame: A DataFrame containing the losses profiles data.
     """
     # Load the dataframe from a CSV file
-    df = pd.read_csv("./data/losses_profiles.csv")
+    df = pd.read_csv("/workspace/data/losses_profiles.csv")
 
     # Return the dataframe
     return df
