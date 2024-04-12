@@ -1,7 +1,7 @@
 from datetime import date
 
 
-def get_last_month() -> dict:
+def last_month() -> dict:
     """
     This function returns the last month as an integer.
     If the current month is January (1), it returns December (12).

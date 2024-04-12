@@ -3,7 +3,17 @@ import glob
 import os
 
 
-def process_and_save():
+def update_prices() -> pd.DataFrame:
+    """
+    Updates the energy prices data by reading in all the CSV files in
+    the "/workspace/data/prices/" directory, concatenating the data
+    into a single DataFrame, and writing the result to a CSV file
+    at "/workspace/data/energy_prices.csv". The function also calculates
+    the maximum and minimum price for each year and prints the results.
+
+    Returns:
+        pd.DataFrame: The updated energy prices data.
+    """
     # Get a list of all the files in the data folder
     files = sorted(glob.glob(os.path.join("/workspace/data/prices/", "*.1")))
 
@@ -23,8 +33,8 @@ def process_and_save():
                 "month",
                 "day",
                 "duration",
-                "spain€/kWh",
-                "portugal€/kWh",
+                "spain€/MWh",
+                "portugal€/MWh",
                 "value",
             ],
             engine="python",
@@ -48,7 +58,7 @@ def process_and_save():
         temp_df = temp_df.resample("15min").ffill()
 
         # Append the dataframe to the list
-        dfs.append(temp_df[["portugal€/kWh"]])
+        dfs.append(temp_df[["portugal€/MWh"]])
 
     # Concatenate all dataframes in the list
     df = pd.concat(dfs)
@@ -56,13 +66,13 @@ def process_and_save():
     # Reset the index
     df.reset_index(inplace=True)
 
-    df.columns = ["starting_datetime", "€/kWh"]
+    df.columns = ["starting_datetime", "€/MWh"]
 
     # Write the dataframe to a single csv file
     df.to_csv("/workspace/data/energy_prices.csv", index=False)
 
     # Group by year and calculate the maximum and minimum price
-    max_min_prices = df.groupby(df["starting_datetime"].dt.year)["€/kWh"].agg(
+    max_min_prices = df.groupby(df["starting_datetime"].dt.year)["€/MWh"].agg(
         ["max", "min"]
     )
 
@@ -73,26 +83,15 @@ def process_and_save():
     return df
 
 
-def calculate_kwh_cost(prices: pd.DataFrame, losses: pd.DataFrame) -> pd.DataFrame:
+def get_prices() -> pd.DataFrame:
     """
-    Calculates the final cost per kWh including losses and fees.
-
-    Args:
-        prices (pandas.DataFrame): Dataframe containing prices data.
-        losses (pandas.DataFrame): Dataframe containing losses data.
+    Loads the losses profiles data from a CSV file.
 
     Returns:
-        pandas.DataFrame: Dataframe with final cost per kWh added.
+        pd.DataFrame: A DataFrame containing the losses profiles data.
     """
-    # FA (Adjustment factor) corresponds to the constant 1.03.
-    af = 1.03
+    # Load the dataframe from a CSV file
+    df = pd.read_csv("./data/prices.csv")
 
-    # qFare = 0.01479 €/kWh - Cost of Complementary Services
-    qfare = 0.01479
-    
-    df = pd.DataFrame()
-
-    # Calculates the final price per kWh including losses and fees
-    df["€€€/kWh"] = (prices["€/kWh"] + 0) * (1 + losses["value"]) * af + qfare
-
+    # Return the dataframe
     return df

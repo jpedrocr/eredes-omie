@@ -2,11 +2,13 @@ from glob import glob
 import pandas as pd
 
 
-def get_losses_profiles() -> pd.DataFrame:
+def update_losses_profiles() -> pd.DataFrame:
     """
-    Get the losses profiles from E-REDES.
-    """
+    Updates and saves the losses profiles data from Excel files in the "/workspace/data/losses_profiles/" directory.
 
+    Returns:
+        pd.DataFrame: The updated losses profiles data.
+    """
     # Get the list of losses profiles files
     files = sorted(glob("/workspace/data/losses_profiles/*.xlsx"))
 
@@ -31,14 +33,14 @@ def get_losses_profiles() -> pd.DataFrame:
     # Use only columns 1, 3 and 4, index 0
     df = df.iloc[:, [1, 3, 4]]
 
-    # Set column names to date, time, value
-    df.columns = ["date", "time", "value"]
+    # Set column names to date, time, losses_profile
+    df.columns = ["date", "time", "losses_profile"]
 
     # Convert the 'date' column to datetime
     df["date"] = pd.to_datetime(df["date"])
 
     # Append ':00' to 'time' column and convert it to timedelta
-    df["time"] = pd.to_timedelta(df["time"] + ':00')
+    df["time"] = pd.to_timedelta(df["time"] + ":00")
 
     # Subtract 15 minutes to get the starting time of the interval
     df["starting_time"] = df["time"] - pd.Timedelta(minutes=15)
@@ -50,10 +52,24 @@ def get_losses_profiles() -> pd.DataFrame:
     df["starting_datetime"] = df["starting_datetime"].dt.tz_localize("UTC")
 
     # Set only the final columns
-    df = df[["starting_datetime", "value"]]
+    df = df[["starting_datetime", "losses_profile"]]
 
     # Save the dataframe to a CSV file
     df.to_csv("./data/losses_profiles.csv", index=False)
+
+    # Return the dataframe
+    return df
+
+
+def get_losses_profiles() -> pd.DataFrame:
+    """
+    Loads the losses profiles data from a CSV file.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the losses profiles data.
+    """
+    # Load the dataframe from a CSV file
+    df = pd.read_csv("./data/losses_profiles.csv")
 
     # Return the dataframe
     return df

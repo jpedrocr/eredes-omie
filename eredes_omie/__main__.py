@@ -1,9 +1,8 @@
 # Import the consumption_history module
 # import argparse
 from datetime import date
-import consumption_history as ch
-import losses_profiles as lp
-import prices as pr
+import eredes_omie.e_redes.consumption_history as ch
+import operators.repsol as rp
 
 
 def main(debug: bool) -> None:
@@ -31,4 +30,4 @@ if __name__ == "__main__":
     # main(args.debug)
     # ch.process_consumption_history()
     # lp.get_losses_profiles()
-    pr.process_and_save()
+    rp.update_prices()

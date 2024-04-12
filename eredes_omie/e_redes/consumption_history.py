@@ -4,7 +4,7 @@ import os
 import time
 import pandas as pd
 
-import months
+from months import last_month
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -201,10 +201,12 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
     """
     Downloads the consumption history from the Eredes website and exports it to an Excel file.
 
-    If `previous_month` is `True`, the function will also download the consumption history for the previous month and save it to a file.
+    If `previous_month` is `True`, the function will also download the consumption history for 
+    the previous month and save it to a file.
 
     Args:
-        previous_month (bool): If `True`, the function will also download the consumption history for the previous month.
+        previous_month (bool): If `True`, the function will also download the consumption history 
+        for the previous month.
         debug (bool): If `True`, the function will use a headless browser for debugging purposes.
 
     Raises:
@@ -254,7 +256,7 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
         # If a specific month is provided
         if previous_month:
             # Select the previous month on the webpage
-            month = months.get_last_month()
+            month = last_month()
             select_month(driver, month["month"], month["year"])
 
             # Export the consumption history to Excel
