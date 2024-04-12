@@ -7,7 +7,7 @@ def get_losses_profiles() -> pd.DataFrame:
     Get the losses profiles from E-REDES.
     """
 
-    # Get the list of consumption history files
+    # Get the list of losses profiles files
     files = sorted(glob("/workspace/data/losses_profiles/*.xlsx"))
 
     # Initialize a list of dataframes

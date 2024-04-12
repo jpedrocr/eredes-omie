@@ -3,6 +3,7 @@
 from datetime import date
 import consumption_history as ch
 import losses_profiles as lp
+import prices as pr
 
 
 def main(debug: bool) -> None:
@@ -29,4 +30,5 @@ if __name__ == "__main__":
     # args = parser.parse_args()
     # main(args.debug)
     # ch.process_consumption_history()
-    lp.get_losses_profiles()
+    # lp.get_losses_profiles()
+    pr.process_and_save()
