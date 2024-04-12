@@ -19,17 +19,16 @@ def download_prices(requested_date: datetime = __tomorrow__) -> None:
 
     # Define the URL
     url = f"https://www.omie.es/en/file-download?parents%5B0%5D=marginalpdbcpt&filename=marginalpdbcpt_{requested_date}.1"
-    
-    print(f"Downloaded energy prices for date: {requested_date}")
 
     # Send a GET request to the URL
     response = requests.get(url)
 
     # Check if the request was successful
-    if response.status_code == 200:
+    if response.status_code == 200 and response.content != b"":
+        print(f"Downloaded energy prices for date: {requested_date}")
         # Save the content to a file
         with open(
-            f"/workspace/data/prices/marginalpdbcpt_{requested_date}.1", "wb"
+            f"/workspace/data/energy_prices/marginalpdbcpt_{requested_date}.1", "wb"
         ) as file:
             file.write(response.content)
     else:
@@ -56,7 +55,7 @@ def check_and_download(
         date_str = date.strftime("%Y%m%d")
 
         # Define the file path
-        file_path = f"/workspace/data/prices/marginalpdbcpt_{date_str}.1"
+        file_path = f"/workspace/data/energy_prices/marginalpdbcpt_{date_str}.1"
 
         # Check if the file exists
         if not os.path.exists(file_path):
@@ -70,7 +69,7 @@ def check_and_download(
 def update_prices() -> pd.DataFrame:
     """
     Updates the energy prices data by reading in all the CSV files in
-    the "/workspace/data/prices/" directory, concatenating the data
+    the "/workspace/data/energy_prices/" directory, concatenating the data
     into a single DataFrame, and writing the result to a CSV file
     at "/workspace/data/energy_prices.csv". The function also calculates
     the maximum and minimum price for each year and prints the results.
@@ -80,9 +79,9 @@ def update_prices() -> pd.DataFrame:
     """
     # Assure all available prices are downloaded
     check_and_download()
-    
+
     # Get a list of all the files in the data folder
-    files = sorted(glob.glob(os.path.join("/workspace/data/prices/", "*.1")))
+    files = sorted(glob.glob(os.path.join("/workspace/data/energy_prices", "*.1")))
 
     # Initialize a list to store the dataframes
     dfs = []
