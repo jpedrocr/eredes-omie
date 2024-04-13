@@ -32,7 +32,8 @@ def download_prices(requested_date: pd.Timestamp = utils.tomorrow()) -> None:
 
 
 def check_and_download(
-    start_date: pd.Timestamp = utils.check_start(), end_date: pd.Timestamp = utils.tomorrow()
+    start_date: pd.Timestamp = utils.check_start(),
+    end_date: pd.Timestamp = utils.tomorrow(),
 ) -> None:
     """
     Checks if the price data files for the given date range exist, and downloads the missing files.
@@ -60,6 +61,32 @@ def check_and_download(
 
         # Move to the next date
         current_date += pd.Timedelta(days=1)
+
+
+def add_missing_timeslots(temp_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds missing time slots to the end of the day in the energy prices data.
+
+    Args:
+        temp_df (pd.DataFrame): The energy prices data.
+
+    Returns:
+        pd.DataFrame: The energy prices data with added time slots.
+    """
+    # Check if the last time slot is less than 23:45
+    last_time_slot = temp_df.index[-1].time()
+    if last_time_slot < pd.Timestamp("23:45").time():
+        # If so, add new rows for the missing time slots
+        end_of_day = pd.date_range(
+            start=temp_df.index[-1] + pd.Timedelta(minutes=15),
+            end=temp_df.index[-1].normalize() + pd.Timedelta(hours=23, minutes=45),
+            freq="15min",
+        )
+        empty_df = pd.DataFrame(index=end_of_day)
+        temp_df = pd.concat([temp_df, empty_df])
+        temp_df = temp_df.ffill()
+
+    return temp_df
 
 
 def update_prices() -> pd.DataFrame:
@@ -118,6 +145,9 @@ def update_prices() -> pd.DataFrame:
         # Resample the data to quarters of hour and forward fill the missing values
         temp_df.set_index("datetime", inplace=True)
         temp_df = temp_df.resample("15min").ffill()
+
+        # Add the missing time slots
+        temp_df = add_missing_timeslots(temp_df)
 
         # Append the dataframe to the list
         dfs.append(temp_df[["portugal€/MWh"]])

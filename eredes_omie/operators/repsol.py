@@ -104,7 +104,7 @@ def plot_day_prices(
     plt.ylim([0.0, 0.2])
 
     # Set the x-axis limit
-    plt.xlim([day_df.index[0], day_df.index[-1] + pd.Timedelta(hours=1)])
+    plt.xlim([day_df.index[0], day_df.index[-1] + pd.Timedelta(minutes=15)])
 
     # Set the x-axis tick interval to 1 hour
     plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=1))
@@ -135,26 +135,35 @@ def plot_day_prices(
 
     return image_path
 
-
 def plot_prices(
-    start_date: pd.Timestamp = utils.tomorrow(), override: bool = False
+    override: bool = False,
+    start_date: str = None,
+    debug: bool = False,
 ) -> str:
     """
     Plots the Repsol indexed prices for each day since a given start date
     and saves each plot as a separate PNG file.
 
     Args:
-        start_date (pd.Timestamp): The start date to filter the prices data.
-        override (bool): If True, override the existing plot images.
+        override (bool): If True, overrides the existing plot images.
+        start_date (str): The start date to filter the prices data. Defaults to None.
+        debug (bool): If True, prints debug information. Defaults to False.
 
     Returns:
         str: The path to the latest generated price plot image.
     """
-    # If the start_date is set to tomorrow and tomorrow's prices are not available yet
+    # If start_date is not provided, set it to tomorrow
+    if start_date is None:
+        start_date = utils.tomorrow()
+    else:
+        # Convert the provided start_date to a format compatible with Repsol data
+        start_date = utils.repsol_start_date(start_date)
+
+    # If the start_date is set to tomorrow and tomorrow's prices are not available yet,
+    # set the start_date to today
     if start_date == utils.tomorrow() and not omie.energy_prices.is_available(
         start_date
     ):
-        # Set the start_date to today
         start_date = utils.today()
 
     # Retrieve the prices data
@@ -182,7 +191,7 @@ def plot_prices(
         # Set "starting_datetime" column to be the index
         day_df.index = pd.to_datetime(day_df["starting_datetime"])
 
-        # Call the new function to plot the day's prices and get the image path
+        # Plot the day's prices and get the image path
         latest_image = plot_day_prices(day_df[["€/kWh"]], current_date, save_dir)
 
     # Return the path of the most recently generated image
