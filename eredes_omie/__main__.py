@@ -1,6 +1,6 @@
 # Import the consumption_history module
-# import argparse
 import argparse
+import pandas as pd
 from datetime import date
 from e_redes import consumption_history
 from omie import energy_prices
@@ -50,12 +50,13 @@ def main(debug: bool) -> None:
     Main function that orchestrates the download of consumption history and prints the URL.
     """
 
-    # download_consumption_history(debug=debug)
-    # process_consumption_history(debug=debug)
+    download_consumption_history(debug=debug)
+    process_consumption_history(debug=debug)
 
-    # update_losses_profiles(debug=debug)
+    update_losses_profiles(debug=debug)
 
     update_prices(debug=debug)
+    repsol.plot_prices()
 
 
 # This condition checks if this script is being run directly or imported by another script
