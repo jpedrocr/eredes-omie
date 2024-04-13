@@ -49,7 +49,7 @@ def update_prices(
     df = df[["starting_datetime", "€/kWh"]]
 
     # Write the dataframe to a single csv file
-    df.to_csv("/workspace/data/repsol_prices.csv", index=False)
+    df.to_csv("/workspace/data/repsol_indexed_prices.csv", index=False)
 
     # Group by year and calculate the maximum and minimum price
     max_min_prices = df.groupby(df["starting_datetime"].dt.year)["€/kWh"].agg(
@@ -68,7 +68,7 @@ def get_prices() -> pd.DataFrame:
     """
     # Load the dataframe from a CSV file
     df = pd.read_csv(
-        "/workspace/data/repsol_prices.csv", parse_dates=["starting_datetime"]
+        "/workspace/data/repsol_indexed_prices.csv", parse_dates=["starting_datetime"]
     )
 
     # Return the dataframe
@@ -128,10 +128,12 @@ def plot_day_prices(
         bins=30,
         label=f"Max: {data_max:.6f} €\nMin: {data_min:.6f} €\nMean: {data_mean:.6f} €",
     )
-    
+
     # Add a legend to the plot with right alignment
-    legend = plt.legend(loc='upper right', title_fontsize='13', borderaxespad=0., frameon=True)
-    plt.setp(legend.get_texts(), ha='right')  # Align text to the right
+    legend = plt.legend(
+        loc="upper right", title_fontsize="13", borderaxespad=0.0, frameon=True
+    )
+    plt.setp(legend.get_texts(), ha="right")  # Align text to the right
 
     # Add a grid to the plot for easier reading
     plt.grid(True)

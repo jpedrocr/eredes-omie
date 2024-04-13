@@ -42,7 +42,7 @@ def update_prices(debug: bool = False) -> None:
     repsol.update_prices()
 
 
-def plot_repsol_prices(
+def plot_repsol_indexed_prices(
     override: bool = False, start_date: str = None, debug: bool = False
 ) -> None:
     """
@@ -75,7 +75,7 @@ def main(
     if prices:
         update_prices(debug=debug)
 
-    plot_repsol_prices(override=override, start_date=start_date, debug=debug)
+    plot_repsol_indexed_prices(override=override, start_date=start_date, debug=debug)
 
 
 if __name__ == "__main__":
