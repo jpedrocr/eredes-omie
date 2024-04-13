@@ -1,5 +1,7 @@
 import os
 
+import numpy as np
+
 import erse.losses_profiles
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -115,14 +117,27 @@ def plot_day_prices(
     # Rotate the x-axis labels for better visibility
     plt.xticks(rotation=45)
 
-    # Add a legend to the plot
-    plt.legend()
+    # Calculate statistics
+    data_max = np.max(day_df)
+    data_min = np.min(day_df)
+    data_mean = np.mean(day_df)
+
+    # Create histogram of data
+    plt.hist(
+        day_df,
+        bins=30,
+        label=f"Max: {data_max:.6f} €\nMin: {data_min:.6f} €\nMean: {data_mean:.6f} €",
+    )
+    
+    # Add a legend to the plot with right alignment
+    legend = plt.legend(loc='upper right', title_fontsize='13', borderaxespad=0., frameon=True)
+    plt.setp(legend.get_texts(), ha='right')  # Align text to the right
 
     # Add a grid to the plot for easier reading
     plt.grid(True)
 
     # Define the path where the current plot image will be saved
-    image_path = f"{save_dir}/{current_date}.png"
+    image_path = f"{save_dir}/repsol/{current_date}.png"
 
     # Save the current plot as a PNG image at the specified path
     plt.savefig(image_path)
@@ -134,6 +149,7 @@ def plot_day_prices(
     plt.close()
 
     return image_path
+
 
 def plot_prices(
     override: bool = False,
