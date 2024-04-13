@@ -1,16 +1,12 @@
 import glob
 import os
-from datetime import datetime, timedelta
 
 import pandas as pd
 import requests
+import utils
 
 
-__check_start__ = datetime.fromisoformat("2024-04-01")
-__tomorrow__ = datetime.now() + timedelta(days=1)
-
-
-def download_prices(requested_date: datetime = __tomorrow__) -> None:
+def download_prices(requested_date: pd.Timestamp = utils.tomorrow()) -> None:
     """
     Downloads the prices data from the OMIE's website and saves it to a file.
     """
@@ -36,23 +32,23 @@ def download_prices(requested_date: datetime = __tomorrow__) -> None:
 
 
 def check_and_download(
-    start_date: datetime = __check_start__, end_date: datetime = __tomorrow__
+    start_date: pd.Timestamp = utils.check_start(), end_date: pd.Timestamp = utils.tomorrow()
 ) -> None:
     """
     Checks if the price data files for the given date range exist, and downloads the missing files.
 
     Args:
-        start_date (datetime): The start date of the date range to check. Defaults to `__check_start__`.
-        end_date (datetime): The end date of the date range to check. Defaults to `__tomorrow__`.
+        start_date (pd.Timestamp): The start date of the date range to check. Defaults to `__check_start__`.
+        end_date (pd.Timestamp): The end date of the date range to check. Defaults to `__tomorrow__`.
 
     Raises:
         None
     """
     # Iterate over the dates from start_date to end_date
-    date = start_date
-    while date <= end_date:
+    current_date = start_date
+    while current_date <= end_date:
         # Convert date to the format YYYYMMDD
-        date_str = date.strftime("%Y%m%d")
+        date_str = current_date.strftime("%Y%m%d")
 
         # Define the file path
         file_path = f"/workspace/data/energy_prices/marginalpdbcpt_{date_str}.1"
@@ -60,10 +56,10 @@ def check_and_download(
         # Check if the file exists
         if not os.path.exists(file_path):
             # If the file doesn't exist, download the data for this date
-            download_prices(date)
+            download_prices(current_date)
 
         # Move to the next date
-        date += timedelta(days=1)
+        current_date += pd.Timedelta(days=1)
 
 
 def update_prices() -> pd.DataFrame:
@@ -164,3 +160,20 @@ def get_prices() -> pd.DataFrame:
 
     # Return the dataframe
     return df
+
+
+def is_available(date: pd.Timestamp) -> bool:
+    """
+    Checks if the energy prices data is available for the given date.
+    """
+    # Convert date to the format YYYYMMDD
+    date_str = date.strftime("%Y%m%d")
+
+    # Define the file path
+    file_path = f"/workspace/data/energy_prices/marginalpdbcpt_{date_str}.1"
+
+    # Check if the file exists
+    if os.path.exists(file_path):
+        return True
+    else:
+        return False

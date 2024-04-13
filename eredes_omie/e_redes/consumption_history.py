@@ -1,4 +1,3 @@
-from datetime import date, datetime
 from glob import glob
 import os
 import time
@@ -129,7 +128,7 @@ def navigate_to_history(driver: webdriver.Remote) -> None:
 
 
 def select_month(
-    driver: webdriver.Remote, month: int, year: int = date.today().year
+    driver: webdriver.Remote, month: int, year: int = pd.Timestamp.today().year
 ) -> None:
     """Navigates to the selected month and year on a webpage using Selenium WebDriver.
 
@@ -156,7 +155,7 @@ def select_month(
     ).click()
 
     # Get the currently selected year
-    selected_year = date.today().year
+    selected_year = pd.Timestamp.today().year
 
     # Loop until the selected year matches the desired year
     while year != selected_year:
@@ -249,8 +248,8 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
 
         # rename the file
         os.rename(
-            f"./downloads/Consumos_{date.today():%Y%m%d}.xlsx",
-            f"./downloads/Consumos_{datetime.now():%Y%m%d%H%M%S}.xlsx",
+            f"./downloads/Consumos_{pd.Timestamp.today():%Y%m%d}.xlsx",
+            f"./downloads/Consumos_{pd.Timestamp.now():%Y%m%d%H%M%S}.xlsx",
         )
 
         # If a specific month is provided
@@ -264,7 +263,7 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
 
             # rename the file
             os.rename(
-                f"./downloads/Consumos_{date.today():%Y%m%d}.xlsx",
+                f"./downloads/Consumos_{pd.Timestamp.today():%Y%m%d}.xlsx",
                 f"./data/consumption_history/Consumos_{month['year']:04}{month['month']:02}.xlsx",
             )
 
