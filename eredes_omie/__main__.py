@@ -1,10 +1,11 @@
 # Import the consumption_history module
 import argparse
-import pandas as pd
+import shutil
 from datetime import date
+
 from e_redes import consumption_history
-from omie import energy_prices
 from erse import losses_profiles
+from omie import energy_prices
 from operators import repsol
 
 
@@ -45,18 +46,29 @@ def update_prices(debug: bool = False) -> None:
     repsol.update_prices()
 
 
+def plot_repsol_prices(debug: bool = False) -> None:
+    """
+    Plot the Repsol prices.
+    """
+    # Load the latest plot figure location
+    location = repsol.plot_prices()
+
+    # Copy the figure to the folder /workspace/ folder with filename as repsol_prices.png
+    shutil.copy(location, "/workspace/repsol_latest_prices.png")
+
+
 def main(debug: bool) -> None:
     """
     Main function that orchestrates the download of consumption history and prints the URL.
     """
 
-    download_consumption_history(debug=debug)
-    process_consumption_history(debug=debug)
+    # download_consumption_history(debug=debug)
+    # process_consumption_history(debug=debug)
 
-    update_losses_profiles(debug=debug)
+    # update_losses_profiles(debug=debug)
 
-    update_prices(debug=debug)
-    repsol.plot_prices()
+    # update_prices(debug=debug)
+    plot_repsol_prices(debug=debug)
 
 
 # This condition checks if this script is being run directly or imported by another script
