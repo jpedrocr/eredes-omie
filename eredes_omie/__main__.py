@@ -54,20 +54,22 @@ def plot_repsol_prices(debug: bool = False) -> None:
     location = repsol.plot_prices()
 
     # Copy the figure to the folder /workspace/ folder with filename as repsol_prices.png
-    shutil.copy(location, "/workspace/repsol_latest_prices.png")
+    if location != "":
+        shutil.copy(location, "/workspace/repsol_latest_prices.png")
 
 
-def main(debug: bool) -> None:
+def main(history: bool = True, losses: bool = False, debug: bool = False) -> None:
     """
     Main function that orchestrates the download of consumption history and prints the URL.
     """
+    if losses:
+        update_losses_profiles(debug=debug)
 
-    # download_consumption_history(debug=debug)
-    # process_consumption_history(debug=debug)
+    if history:
+        download_consumption_history(debug=debug)
+        process_consumption_history(debug=debug)
 
-    # update_losses_profiles(debug=debug)
-
-    # update_prices(debug=debug)
+    update_prices(debug=debug)
     plot_repsol_prices(debug=debug)
 
 
@@ -76,5 +78,9 @@ def main(debug: bool) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true", help="Turn on debug mode")
+    parser.add_argument("--losses", action="store_true", help="Update losses profiles")
+    parser.add_argument(
+        "--no-history", action="store_true", help="Do not update consumption history"
+    )
     args = parser.parse_args()
-    main(args.debug)
+    main(history=not args.no_history, losses=args.losses, debug=args.debug)
