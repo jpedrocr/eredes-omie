@@ -5,7 +5,7 @@ import utils
 from e_redes import consumption_history
 from erse import losses_profiles
 from omie import energy_prices
-from operators import repsol
+from providers import repsol
 
 
 def download_consumption_history(debug: bool = False) -> None:
