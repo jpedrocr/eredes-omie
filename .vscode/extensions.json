@@ -8,7 +8,6 @@
         "editorconfig.editorconfig",
         "formulahendry.docker-extension-pack",
         "sourcegraph.cody-ai",
-        "oderwat.indent-rainbow",
-        "demystifying-javascript.python-extensions-pack"
+        "oderwat.indent-rainbow"
     ]
 }
