@@ -4,31 +4,55 @@ import os
 import pandas as pd
 import requests
 import utils
+from typing import Optional
+from requests.exceptions import SSLError, RequestException
 
 
-def download_prices(requested_date: pd.Timestamp = utils.tomorrow()) -> None:
+def download_prices(requested_date: Optional[pd.Timestamp] = None) -> None:
     """
     Downloads the prices data from the OMIE's website and saves it to a file.
+
+    Args:
+        requested_date (pd.Timestamp, optional): The date for which the prices data is to be downloaded. Defaults to tomorrow's date.
     """
+    # If no date is provided, default to tomorrow's date
+    if requested_date is None:
+        requested_date = utils.tomorrow()
+
     # Convert requested date to the format YYYYMMDD
-    requested_date = requested_date.strftime("%Y%m%d")
+    requested_date_str = requested_date.strftime("%Y%m%d")
 
-    # Define the URL
-    url = f"https://www.omie.es/en/file-download?parents%5B0%5D=marginalpdbcpt&filename=marginalpdbcpt_{requested_date}.1"
+    # Define the URL for the OMIE's website
+    url = f"https://www.omie.es/pt/file-download?parents%5B0%5D=marginalpdbcpt&filename=marginalpdbcpt_{requested_date_str}.1"
 
-    # Send a GET request to the URL
-    response = requests.get(url)
+    try:
+        # Send a GET request to the URL
+        response = requests.get(url, verify=True)
 
-    # Check if the request was successful
-    if response.status_code == 200 and response.content != b"":
-        print(f"Downloaded energy prices for date: {requested_date}")
-        # Save the content to a file
-        with open(
-            f"/workspace/data/energy_prices/marginalpdbcpt_{requested_date}.1", "wb"
-        ) as file:
-            file.write(response.content)
-    else:
-        print(f"Failed to download energy prices for date: {requested_date}")
+        # Check if the request was successful
+        if response.status_code == 200 and response.content != b"":
+            print(f"Downloaded energy prices for date: {requested_date_str}")
+
+            # Define the directory for saving the file
+            dir_path = "/workspace/data/energy_prices/"
+            # Create the directory if it does not exist
+            os.makedirs(dir_path, exist_ok=True)
+
+            # Save the content to a file
+            with open(
+                os.path.join(dir_path, f"marginalpdbcpt_{requested_date_str}.1"), "wb"
+            ) as file:
+                file.write(response.content)
+        else:
+            print(f"Failed to download energy prices for date: {requested_date_str}")
+    except SSLError as e:
+        print(
+            f"SSL error occurred while trying to download energy prices for date: {requested_date_str}. Error details: {e}"
+        )
+    except RequestException as e:
+        print(
+            f"An error occurred while trying to download energy prices for date: {requested_date_str}. Error details: {e}"
+        )
 
 
 def check_and_download(
