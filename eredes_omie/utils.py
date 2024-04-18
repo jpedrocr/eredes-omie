@@ -14,6 +14,10 @@ def tomorrow() -> pd.Timestamp:
     return parse_date(pd.Timestamp.today() + pd.Timedelta(days=1))
 
 
+def yesterday() -> pd.Timestamp:
+    return parse_date(pd.Timestamp.today() - pd.Timedelta(days=1))
+
+
 def check_start(check_date: str = "2024-04-01") -> pd.Timestamp:
     return parse_date(check_date)
 
@@ -29,9 +33,7 @@ def parser_args() -> argparse.Namespace:
     parser.add_argument(
         "--no-history", action="store_true", help="Do not update consumption history"
     )
-    parser.add_argument(
-        "--no-prices", action="store_true", help="Do not update prices"
-    )
+    parser.add_argument("--no-prices", action="store_true", help="Do not update prices")
     parser.add_argument("--losses", action="store_true", help="Update losses profiles")
     parser.add_argument("--override", action="store_true", help="Override images")
     parser.add_argument(

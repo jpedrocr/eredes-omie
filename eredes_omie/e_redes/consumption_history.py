@@ -1,5 +1,6 @@
 from glob import glob
 import os
+import shutil
 import time
 import pandas as pd
 
@@ -200,11 +201,11 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
     """
     Downloads the consumption history from the E-Redes website and exports it to an Excel file.
 
-    If `previous_month` is `True`, the function will also download the consumption history for 
+    If `previous_month` is `True`, the function will also download the consumption history for
     the previous month and save it to a file.
 
     Args:
-        previous_month (bool): If `True`, the function will also download the consumption history 
+        previous_month (bool): If `True`, the function will also download the consumption history
         for the previous month.
         debug (bool): If `True`, the function will use a headless browser for debugging purposes.
 
@@ -246,11 +247,14 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
         # Export the consumption history to Excel
         export_to_excel(driver)
 
-        # rename the file
-        os.rename(
+        # copy the file, override if needed
+        shutil.copyfile(
             f"./downloads/Consumos_{pd.Timestamp.today():%Y%m%d}.xlsx",
-            f"./downloads/Consumos_{pd.Timestamp.now():%Y%m%d%H%M%S}.xlsx",
+            f"./data/consumption_history/Consumos_{pd.Timestamp.today():%Y%m%d}.xlsx",
         )
+
+        # remove the previous file
+        os.remove(f"./downloads/Consumos_{pd.Timestamp.today():%Y%m%d}.xlsx")
 
         # If a specific month is provided
         if previous_month:
@@ -378,6 +382,107 @@ def process_and_save_dataframe(df: pd.DataFrame = None) -> pd.DataFrame | None:
 
     # Save the dataframe to a CSV file
     df.to_csv("./data/consumption_history.csv", index=False)
+
+    # Return the dataframe
+    return df
+
+
+def process_current_month_consumption_history() -> None:
+    """
+    Processes thec current month consumption history data.
+    Loads the Excel file in downloads into a Pandas DataFrame and saves it to a CSV file.
+    """
+    # Get the list of consumption history files
+    files = sorted(glob("/workspace/downloads/*.xlsx"))
+
+    # Initialize a list of dataframes
+    dfs = []
+
+    # Loop through the files
+    for file in files:
+        # print(f"Processing {file}")
+        # Load the file into a dataframe
+        df = pd.read_excel(
+            file,
+            sheet_name="Leituras",
+            skiprows=14,
+        )
+
+        # Append the dataframe to the list
+        dfs.append(df)
+
+    # Concatenate the dataframes
+    df = pd.concat(dfs)
+
+    # Process the dataframe and save it to a CSV file
+    df = process_and_save_current_month_dataframe(df)
+
+    # Print the number of rows and columns in the dataframe
+    print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
+
+
+def process_and_save_current_month_dataframe(
+    df: pd.DataFrame = None,
+) -> pd.DataFrame | None:
+    """
+    Processes the consumption history dataframe, and saves it to a CSV file.
+    """
+
+    if df is None:
+        # If the dataframe is not provided as an argument, load
+        # the dataframe from a CSV file
+        df = pd.read_csv("./data/current_month_consumption_history.csv")
+    elif len(df.columns) == 10:
+        # If the dataframe is provided as an argument, and it has
+        # 10 columns, drop the columns that are not needed
+        df.drop(df.columns[[2, 3, 4, 5, 7, 9]], axis=1, inplace=True)
+
+    # Set the list of column names
+    df.columns = [
+        "date",
+        "time",
+        "consumption_kw",
+        "injection_kw",
+    ]
+
+    # Convert the date and time columns to datetime object in column datetime
+    df["starting_datetime"] = pd.to_datetime(df["date"] + " " + df["time"])
+
+    # Subtract 15 minutes from the datetime column
+    df["starting_datetime"] = df["starting_datetime"] - pd.Timedelta(minutes=15)
+
+    # Set the datetime column as UTC
+    df["starting_datetime"] = df["starting_datetime"].dt.tz_localize("UTC")
+
+    # Add a new columns with the sum of the consumption and injection columns
+    df["consumption_kwh"] = df["consumption_kw"] - df["injection_kw"]
+    df["injection_kwh"] = df["injection_kw"] - df["consumption_kw"]
+
+    # Set consumption_kwh and injection_kwh to 0 if it is negative
+    df["consumption_kwh"] = df["consumption_kwh"].apply(lambda x: 0 if x < 0 else x)
+    df["injection_kwh"] = df["injection_kwh"].apply(lambda x: 0 if x < 0 else x)
+
+    # Convert from kW per quarter to kW per hour
+    df["consumption_kwh"] = df["consumption_kwh"] / 4
+    df["injection_kwh"] = df["injection_kwh"] / 4
+
+    # Print the sum of the consumption and injection columns by year
+    print(
+        f"Current month Consumption:\n{df.groupby(df["starting_datetime"].dt.year)["consumption_kwh"].sum()}"
+    )
+    print(
+        f"Current month Injection:\n{df.groupby(df['starting_datetime'].dt.year)['injection_kwh'].sum()}"
+    )
+
+    # Round the values to 3 decimal places
+    df["consumption_kwh"] = df["consumption_kwh"].round(3)
+    df["injection_kwh"] = df["injection_kwh"].round(3)
+
+    # Set only the final columns
+    df = df[["starting_datetime", "consumption_kwh", "injection_kwh"]]
+
+    # Save the dataframe to a CSV file
+    df.to_csv("./data/current_month_consumption_history.csv", index=False)
 
     # Return the dataframe
     return df

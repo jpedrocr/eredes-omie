@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 import os
 
 import numpy as np
@@ -214,3 +215,34 @@ def plot_prices(
 
     # Return the path of the most recently generated image
     return latest_image
+
+
+def get_latest_prices() -> pd.DataFrame:
+    """
+    Retrieves the latest Repsol indexed prices data.
+    Returns:
+        latest_prices (pd.DataFrame): A DataFrame containing the latest prices.
+    """
+    # Retrieve the prices data
+    prices_df = get_prices()
+
+    # Convert the 'starting_datetime' column to datetime and set it as the index
+    prices_df.index = pd.to_datetime(prices_df["starting_datetime"])
+
+    # Drop the 'starting_datetime' column as it's now redundant
+    prices_df.drop(columns=["starting_datetime"], inplace=True)
+
+    # Create a new DataFrame for the latest prices
+    latest_prices = pd.DataFrame()
+
+    # Filter the prices data to only include entries from the last day
+    # Note: 'date.today() - timedelta(days=1)' gets the date for one day ago
+    # 'pd.Timestamp(..., tz="UTC")' converts the date to a UTC timestamp
+    filter_condition = prices_df.index > pd.Timestamp(
+        date.today() - timedelta(days=1), tz="UTC"
+    )
+
+    # Apply the filter and select the '€/kWh' column
+    latest_prices["€/kWh"] = prices_df.loc[filter_condition, "€/kWh"]
+
+    return latest_prices
