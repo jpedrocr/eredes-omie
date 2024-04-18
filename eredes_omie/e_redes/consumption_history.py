@@ -318,9 +318,6 @@ def process_consumption_history() -> None:
     # Process the dataframe and save it to a CSV file
     df = process_and_save_dataframe(df)
 
-    # Print the number of rows and columns in the dataframe
-    print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
-
 
 def process_and_save_dataframe(df: pd.DataFrame = None) -> pd.DataFrame | None:
     """
@@ -365,14 +362,6 @@ def process_and_save_dataframe(df: pd.DataFrame = None) -> pd.DataFrame | None:
     df["consumption_kwh"] = df["consumption_kwh"] / 4
     df["injection_kwh"] = df["injection_kwh"] / 4
 
-    # Print the sum of the consumption and injection columns by year
-    print(
-        f"Consumption:\n{df.groupby(df["starting_datetime"].dt.year)["consumption_kwh"].sum()}"
-    )
-    print(
-        f"Injection:\n{df.groupby(df['starting_datetime'].dt.year)['injection_kwh'].sum()}"
-    )
-
     # Round the values to 3 decimal places
     df["consumption_kwh"] = df["consumption_kwh"].round(3)
     df["injection_kwh"] = df["injection_kwh"].round(3)
@@ -382,6 +371,15 @@ def process_and_save_dataframe(df: pd.DataFrame = None) -> pd.DataFrame | None:
 
     # Save the dataframe to a CSV file
     df.to_csv("./data/consumption_history.csv", index=False)
+
+    grouped_df = df.copy()
+    grouped_df.index = grouped_df["starting_datetime"]
+    grouped_df.drop("starting_datetime", axis=1, inplace=True)
+
+    # Print the sum of the consumption and injection columns by year
+    print(
+        f"\nConsumption and Injection per Year:\n{grouped_df.resample("1YE").sum()}"
+    )
 
     # Return the dataframe
     return df
@@ -416,9 +414,6 @@ def process_current_month_consumption_history() -> None:
 
     # Process the dataframe and save it to a CSV file
     df = process_and_save_current_month_dataframe(df)
-
-    # Print the number of rows and columns in the dataframe
-    print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
 
 
 def process_and_save_current_month_dataframe(
@@ -466,14 +461,6 @@ def process_and_save_current_month_dataframe(
     df["consumption_kwh"] = df["consumption_kwh"] / 4
     df["injection_kwh"] = df["injection_kwh"] / 4
 
-    # Print the sum of the consumption and injection columns by year
-    print(
-        f"Current month Consumption:\n{df.groupby(df["starting_datetime"].dt.year)["consumption_kwh"].sum()}"
-    )
-    print(
-        f"Current month Injection:\n{df.groupby(df['starting_datetime'].dt.year)['injection_kwh'].sum()}"
-    )
-
     # Round the values to 3 decimal places
     df["consumption_kwh"] = df["consumption_kwh"].round(3)
     df["injection_kwh"] = df["injection_kwh"].round(3)
@@ -483,6 +470,13 @@ def process_and_save_current_month_dataframe(
 
     # Save the dataframe to a CSV file
     df.to_csv("./data/current_month_consumption_history.csv", index=False)
+
+    month_df = df.copy()
+    month_df.index = month_df["starting_datetime"]
+    month_df.drop("starting_datetime", axis=1, inplace=True)
+
+    # Print the sum of the consumption and injection columns by year
+    print(f"\nCurrent month Consumption and Injection:\n{month_df.resample("1ME").sum()}")
 
     # Return the dataframe
     return df
