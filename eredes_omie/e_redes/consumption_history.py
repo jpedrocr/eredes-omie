@@ -1,6 +1,5 @@
 from glob import glob
 import os
-import shutil
 import time
 import pandas as pd
 
