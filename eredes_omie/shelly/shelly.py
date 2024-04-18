@@ -40,8 +40,6 @@ def download_csv(url, filename, save_path="/workspace/data/shelly/"):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-    import pandas as pd
-
 
 # Fix, improve, refactor and add comments, as needed, in English
 def save_yesterday_solar_production():
@@ -116,7 +114,7 @@ def save_yesterday_solar_production():
     full_solar_df.drop_duplicates(subset=["timestamp_utc", "solar_Wh"], inplace=True)
 
     # Save the updated data to a CSV file
-    full_solar_df.to_csv("/workspace/data/solar.1.csv", index=False)
+    full_solar_df.to_csv("/workspace/data/solar.csv", index=False)
 
     # Reset the index
     full_solar_df.reset_index(inplace=True, drop=True)
