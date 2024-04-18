@@ -247,14 +247,15 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
         # Export the consumption history to Excel
         export_to_excel(driver)
 
-        # copy the file, override if needed
-        shutil.copyfile(
-            f"./downloads/Consumos_{pd.Timestamp.today():%Y%m%d}.xlsx",
-            f"./data/consumption_history/Consumos_{pd.Timestamp.today():%Y%m%d}.xlsx",
-        )
-
         # remove the previous file
-        os.remove(f"./downloads/Consumos_{pd.Timestamp.today():%Y%m%d}.xlsx")
+        if os.path.exists(f"./downloads/Consumos_{pd.Timestamp.today():%Y%m}.xlsx"):
+            os.remove(f"./downloads/Consumos_{pd.Timestamp.today():%Y%m}.xlsx")
+
+        # rename the file
+        os.rename(
+            f"./downloads/Consumos_{pd.Timestamp.today():%Y%m%d}.xlsx",
+            f"./downloads/Consumos_{pd.Timestamp.today():%Y%m}.xlsx",
+        )
 
         # If a specific month is provided
         if previous_month:
