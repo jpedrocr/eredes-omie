@@ -31,7 +31,7 @@ def download_prices(requested_date: Optional[pd.Timestamp] = None) -> None:
 
         # Check if the request was successful
         if response.status_code == 200 and response.content != b"":
-            print(f"Downloaded energy prices for date: {requested_date_str}")
+            print(f"\nDownloaded energy prices for date: {requested_date_str}")
 
             # Define the directory for saving the file
             dir_path = "/workspace/data/energy_prices/"
@@ -44,14 +44,14 @@ def download_prices(requested_date: Optional[pd.Timestamp] = None) -> None:
             ) as file:
                 file.write(response.content)
         else:
-            print(f"Failed to download energy prices for date: {requested_date_str}")
+            print(f"\nFailed to download energy prices for date: {requested_date_str}")
     except SSLError as e:
         print(
-            f"SSL error occurred while trying to download energy prices for date: {requested_date_str}. Error details: {e}"
+            f"\nSSL error occurred while trying to download energy prices for date: {requested_date_str}. Error details: {e}"
         )
     except RequestException as e:
         print(
-            f"An error occurred while trying to download energy prices for date: {requested_date_str}. Error details: {e}"
+            f"\nAn error occurred while trying to download energy prices for date: {requested_date_str}. Error details: {e}"
         )
 
 
