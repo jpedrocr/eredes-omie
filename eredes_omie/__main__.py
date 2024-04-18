@@ -15,8 +15,8 @@ def download_consumption_history(debug: bool = False) -> None:
     """
     if date.today().day == 2:
         consumption_history.download(previous_month=True, debug=debug)
-
-    consumption_history.download(previous_month=False, debug=debug)
+    else:
+        consumption_history.download(previous_month=False, debug=debug)
     print("Downloaded data.")
 
 
@@ -25,6 +25,7 @@ def process_consumption_history(debug: bool = False) -> None:
     Process the downloaded consumption history.
     """
     consumption_history.process_consumption_history()
+    consumption_history.process_current_month_consumption_history()
 
 
 def update_losses_profiles(debug: bool = False) -> None:
