@@ -41,7 +41,6 @@ def download_csv(url, filename, save_path="/workspace/data/shelly/"):
         print(f"An error occurred: {e}")
 
 
-# Fix, improve, refactor and add comments, as needed, in English
 def save_yesterday_solar_production():
     """
     Downloads yesterday's solar production data from Shelly's website.
