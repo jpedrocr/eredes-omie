@@ -42,7 +42,7 @@ def get_driver(debug: bool = False) -> webdriver.Remote:
         return driver
     except Exception as e:
         # Printing the error message
-        print("Error connecting to server:", e)
+        print("\nError connecting to server:", e)
 
         # Quitting the driver if it was initialized
         if driver:
@@ -274,7 +274,7 @@ def download(previous_month: bool = False, debug: bool = False) -> None:
 
     except Exception as e:
         # Log the error
-        print(f"Error downloading: {e}")
+        print(f"\nError downloading: {e}")
 
         # Quit the driver
         driver.quit()
@@ -302,7 +302,7 @@ def process_consumption_history() -> None:
 
     # Loop through the files
     for file in files:
-        # print(f"Processing {file}")
+        # print(f"\nProcessing {file}")
         # Load the file into a dataframe
         df = pd.read_excel(
             file,
@@ -343,7 +343,7 @@ def process_current_month_consumption_history() -> None:
 
     # Loop through the files
     for file in files:
-        # print(f"Processing {file}")
+        # print(f"\nProcessing {file}")
         # Load the file into a dataframe
         df = pd.read_excel(
             file,

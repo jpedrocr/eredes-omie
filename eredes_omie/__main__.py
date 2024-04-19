@@ -6,6 +6,7 @@ from e_redes import consumption_history
 from erse import losses_profiles
 from omie import energy_prices
 from providers import repsol
+import shelly.shelly as shelly
 
 
 def download_consumption_history(debug: bool = False) -> None:
@@ -17,7 +18,7 @@ def download_consumption_history(debug: bool = False) -> None:
         consumption_history.download(previous_month=True, debug=debug)
     else:
         consumption_history.download(previous_month=False, debug=debug)
-    print("Downloaded data.")
+    print("\nDownloaded Consumption History.")
 
 
 def process_consumption_history(debug: bool = False) -> None:
@@ -55,9 +56,10 @@ def plot_repsol_indexed_prices(
 
 
 def main(
-    history: bool = True,
-    prices: bool = True,
-    losses: bool = False,
+    update_history: bool = True,
+    _update_prices: bool = True,
+    update_shelly: bool = True,
+    update_losses: bool = False,
     override: bool = False,
     start_date: str = None,
     debug: bool = False,
@@ -66,25 +68,30 @@ def main(
     Main function that orchestrates the download and processing of consumption history,
     updating of losses profiles and prices, and plotting of Repsol prices.
     """
-    if losses:
+    if update_losses:
         update_losses_profiles(debug=debug)
 
-    if history:
+    if update_history:
         download_consumption_history(debug=debug)
         process_consumption_history(debug=debug)
 
-    if prices:
+    if _update_prices:
         update_prices(debug=debug)
 
     plot_repsol_indexed_prices(override=override, start_date=start_date, debug=debug)
+
+    if update_shelly:
+        shelly.save_yesterday_solar_production()
+        shelly.download_mains_data()
 
 
 if __name__ == "__main__":
     args = utils.parser_args()
     main(
-        history=not args.no_history,
-        prices=not args.no_prices,
-        losses=args.losses,
+        update_history=not args.no_history,
+        _update_prices=not args.no_prices,
+        update_shelly=not args.no_shelly,
+        update_losses=args.losses,
         override=args.override,
         start_date=args.start_date,
         debug=args.debug,

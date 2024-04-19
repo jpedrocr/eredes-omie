@@ -14,17 +14,19 @@ def download_csv(url, filename, save_path="/workspace/data/shelly/"):
 
     # Check for the specific error message before downloading
     if "Another file transfer is in progress!" in response.text:
-        print("Download failed: Another file transfer is in progress!")
+        print("\nDownload failed: Another file transfer is in progress!")
         return
 
     # Get the total size of the file from the response headers
     total_size_in_bytes = int(response.headers.get("content-length", 0))
     block_size = 1024  # 1 Kibibyte
 
-    # Initialize the progress bar
-    progress_bar = tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True)
-
     try:
+        print(f"\nDownloading {filename}...")
+        
+        # Initialize the progress bar
+        progress_bar = tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True)
+
         with open(full_path, "wb") as file:
             for data in response.iter_content(block_size):
                 file.write(data)
@@ -34,11 +36,11 @@ def download_csv(url, filename, save_path="/workspace/data/shelly/"):
 
         # Check if the download was completed
         if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
-            print("ERROR, something went wrong")
+            print("\nERROR, something went wrong")
         else:
-            print(f"Download completed. File saved as {full_path}")
+            print(f"\nDownload completed. File saved as {full_path}")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"\nAn error occurred: {e}")
 
 
 def download_mains_data():
@@ -142,4 +144,4 @@ def save_yesterday_solar_production():
     yesterday_solar_df.set_index("timestamp_utc", inplace=True)
 
     # Now you can resample
-    print(f"Yesterday's solar production: \n{yesterday_solar_df.resample('1D').sum()}")
+    print(f"\nYesterday's solar production: \n{yesterday_solar_df.resample('1D').sum()}")

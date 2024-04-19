@@ -17,7 +17,7 @@ def update_losses_profiles() -> pd.DataFrame:
 
     # Loop through the files
     for file in files:
-        print(f"Processing {file}")
+        print(f"\nProcessing {file}")
         # Load the file into a dataframe
         df = pd.read_excel(
             file,

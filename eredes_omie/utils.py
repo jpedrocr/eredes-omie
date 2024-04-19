@@ -34,6 +34,9 @@ def parser_args() -> argparse.Namespace:
         "--no-history", action="store_true", help="Do not update consumption history"
     )
     parser.add_argument("--no-prices", action="store_true", help="Do not update prices")
+    parser.add_argument(
+        "--no-shelly", action="store_true", help="Do not update Shelly PM data"
+    )
     parser.add_argument("--losses", action="store_true", help="Update losses profiles")
     parser.add_argument("--override", action="store_true", help="Override images")
     parser.add_argument(

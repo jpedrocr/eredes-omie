@@ -58,7 +58,7 @@ def update_prices(
     )
 
     # Print the maximum and minimum price for each year
-    print(f"Repsol indexed prices per year (€/kWh):\n{max_min_prices}\n")
+    print(f"\nRepsol indexed prices per year (€/kWh):\n{max_min_prices}")
 
     return df
 
@@ -146,7 +146,7 @@ def plot_day_prices(
     plt.savefig(image_path)
 
     # Print a message to the console indicating that the plot image has been saved
-    print(f"Price plot for {current_date} saved to {image_path}")
+    print(f"\nPrice plot for {current_date} saved to {image_path}")
 
     # Close the current plot figure to free up memory
     plt.close()

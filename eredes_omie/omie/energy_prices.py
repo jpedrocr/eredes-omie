@@ -196,7 +196,7 @@ def update_prices() -> pd.DataFrame:
     )
 
     # Print the maximum and minimum price for each year
-    print(f"Energy prices per year (€/MWh):\n{max_min_prices}\n")
+    print(f"\nEnergy prices per year (€/MWh):\n{max_min_prices}")
 
     # Return the dataframe
     return df
