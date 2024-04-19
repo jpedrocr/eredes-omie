@@ -2,6 +2,7 @@ from glob import glob
 import os
 import time
 import pandas as pd
+import pytz
 
 from .months import last_month
 from dotenv import load_dotenv
@@ -294,7 +295,7 @@ def process_consumption_history() -> None:
     Loads all the Excel files in data/consumption_history into a Pandas DataFrame and saves it to a CSV file.
     """
     # Get the list of consumption history files
-    files = sorted(glob("/workspace/data/consumption_history/*.xlsx"))
+    files = sorted(glob("/workspace/data/consumption_history/Consumos_*.xlsx"))
 
     # Initialize a list of dataframes
     dfs = []
@@ -316,58 +317,7 @@ def process_consumption_history() -> None:
     df = pd.concat(dfs)
 
     # Process the dataframe and save it to a CSV file
-    df = process_and_save_dataframe(df)
-
-
-def process_and_save_dataframe(df: pd.DataFrame = None) -> pd.DataFrame | None:
-    """
-    Processes the consumption history dataframe, and saves it to a CSV file.
-    """
-
-    if df is None:
-        # If the dataframe is not provided as an argument, load
-        # the dataframe from a CSV file
-        df = pd.read_csv("./data/consumption_history.csv")
-    elif len(df.columns) == 10:
-        # If the dataframe is provided as an argument, and it has
-        # 10 columns, drop the columns that are not needed
-        df.drop(df.columns[[2, 3, 4, 5, 7, 9]], axis=1, inplace=True)
-
-    # Set the list of column names
-    df.columns = [
-        "date",
-        "time",
-        "consumption_kw",
-        "injection_kw",
-    ]
-
-    # Convert the date and time columns to datetime object in column datetime
-    df["starting_datetime"] = pd.to_datetime(df["date"] + " " + df["time"])
-
-    # Subtract 15 minutes from the datetime column
-    df["starting_datetime"] = df["starting_datetime"] - pd.Timedelta(minutes=15)
-
-    # Set the datetime column as UTC
-    df["starting_datetime"] = df["starting_datetime"].dt.tz_localize("UTC")
-
-    # Add a new columns with the sum of the consumption and injection columns
-    df["consumption_kwh"] = df["consumption_kw"] - df["injection_kw"]
-    df["injection_kwh"] = df["injection_kw"] - df["consumption_kw"]
-
-    # Set consumption_kwh and injection_kwh to 0 if it is negative
-    df["consumption_kwh"] = df["consumption_kwh"].apply(lambda x: 0 if x < 0 else x)
-    df["injection_kwh"] = df["injection_kwh"].apply(lambda x: 0 if x < 0 else x)
-
-    # Convert from kW per quarter to kW per hour
-    df["consumption_kwh"] = df["consumption_kwh"] / 4
-    df["injection_kwh"] = df["injection_kwh"] / 4
-
-    # Round the values to 3 decimal places
-    df["consumption_kwh"] = df["consumption_kwh"].round(3)
-    df["injection_kwh"] = df["injection_kwh"].round(3)
-
-    # Set only the final columns
-    df = df[["starting_datetime", "consumption_kwh", "injection_kwh"]]
+    df = process_dataframe(df)
 
     # Save the dataframe to a CSV file
     df.to_csv("./data/consumption_history.csv", index=False)
@@ -377,12 +327,7 @@ def process_and_save_dataframe(df: pd.DataFrame = None) -> pd.DataFrame | None:
     grouped_df.drop("starting_datetime", axis=1, inplace=True)
 
     # Print the sum of the consumption and injection columns by year
-    print(
-        f"\nConsumption and Injection per Year:\n{grouped_df.resample("1YE").sum()}"
-    )
-
-    # Return the dataframe
-    return df
+    print(f"\nConsumption and Injection per Year:\n{grouped_df.resample("1YE").sum()}")
 
 
 def process_current_month_consumption_history() -> None:
@@ -413,21 +358,27 @@ def process_current_month_consumption_history() -> None:
     df = pd.concat(dfs)
 
     # Process the dataframe and save it to a CSV file
-    df = process_and_save_current_month_dataframe(df)
+    df = process_dataframe(df)
+
+    # Save the dataframe to a CSV file
+    df.to_csv("./data/current_month_consumption_history.csv", index=False)
+
+    month_df = df.copy()
+    month_df.index = month_df["starting_datetime"]
+    month_df.drop("starting_datetime", axis=1, inplace=True)
+
+    # Print the sum of the consumption and injection columns by year
+    print(
+        f"\nCurrent month Consumption and Injection:\n{month_df.resample("1ME").sum()}"
+    )
 
 
-def process_and_save_current_month_dataframe(
-    df: pd.DataFrame = None,
-) -> pd.DataFrame | None:
+def process_dataframe(df: pd.DataFrame) -> pd.DataFrame | None:
     """
     Processes the consumption history dataframe, and saves it to a CSV file.
     """
 
-    if df is None:
-        # If the dataframe is not provided as an argument, load
-        # the dataframe from a CSV file
-        df = pd.read_csv("./data/current_month_consumption_history.csv")
-    elif len(df.columns) == 10:
+    if len(df.columns) == 10:
         # If the dataframe is provided as an argument, and it has
         # 10 columns, drop the columns that are not needed
         df.drop(df.columns[[2, 3, 4, 5, 7, 9]], axis=1, inplace=True)
@@ -440,43 +391,49 @@ def process_and_save_current_month_dataframe(
         "injection_kw",
     ]
 
+    df = df.copy()
+
+    # Drop all rows with the sum of consumption_kw and injection_kw is equal to 0
+    df = df[df["consumption_kw"] + df["injection_kw"] != 0]
+
+    df.loc[:, "starting_datetime"] = pd.Series(dtype="datetime64[ns, UTC]")
+
     # Convert the date and time columns to datetime object in column datetime
-    df["starting_datetime"] = pd.to_datetime(df["date"] + " " + df["time"])
+    starting_datetime = pd.to_datetime(df["date"] + " " + df["time"])
 
     # Subtract 15 minutes from the datetime column
-    df["starting_datetime"] = df["starting_datetime"] - pd.Timedelta(minutes=15)
+    starting_datetime = starting_datetime - pd.Timedelta(minutes=15)
 
     # Set the datetime column as UTC
-    df["starting_datetime"] = df["starting_datetime"].dt.tz_localize("UTC")
+    starting_datetime = starting_datetime.apply(
+        lambda dt: pytz.timezone("Europe/Lisbon")
+        .localize(dt, is_dst=False)
+        .astimezone(pytz.UTC)
+    ).dt.tz_convert(None)
+    starting_datetime = starting_datetime.dt.tz_localize("UTC")
+
+    df.loc[:, "starting_datetime"] = starting_datetime
 
     # Add a new columns with the sum of the consumption and injection columns
-    df["consumption_kwh"] = df["consumption_kw"] - df["injection_kw"]
-    df["injection_kwh"] = df["injection_kw"] - df["consumption_kw"]
+    df.loc[:, "consumption_kwh"] = df["consumption_kw"] - df["injection_kw"]
+    df.loc[:, "injection_kwh"] = df["injection_kw"] - df["consumption_kw"]
 
     # Set consumption_kwh and injection_kwh to 0 if it is negative
-    df["consumption_kwh"] = df["consumption_kwh"].apply(lambda x: 0 if x < 0 else x)
-    df["injection_kwh"] = df["injection_kwh"].apply(lambda x: 0 if x < 0 else x)
+    df.loc[:, "consumption_kwh"] = df["consumption_kwh"].apply(
+        lambda x: 0 if x < 0 else x
+    )
+    df.loc[:, "injection_kwh"] = df["injection_kwh"].apply(lambda x: 0 if x < 0 else x)
 
     # Convert from kW per quarter to kW per hour
-    df["consumption_kwh"] = df["consumption_kwh"] / 4
-    df["injection_kwh"] = df["injection_kwh"] / 4
+    df.loc[:, "consumption_kwh"] = df["consumption_kwh"] / 4
+    df.loc[:, "injection_kwh"] = df["injection_kwh"] / 4
 
     # Round the values to 3 decimal places
-    df["consumption_kwh"] = df["consumption_kwh"].round(3)
-    df["injection_kwh"] = df["injection_kwh"].round(3)
+    df.loc[:, "consumption_kwh"] = df["consumption_kwh"].round(3)
+    df.loc[:, "injection_kwh"] = df["injection_kwh"].round(3)
 
     # Set only the final columns
     df = df[["starting_datetime", "consumption_kwh", "injection_kwh"]]
-
-    # Save the dataframe to a CSV file
-    df.to_csv("./data/current_month_consumption_history.csv", index=False)
-
-    month_df = df.copy()
-    month_df.index = month_df["starting_datetime"]
-    month_df.drop("starting_datetime", axis=1, inplace=True)
-
-    # Print the sum of the consumption and injection columns by year
-    print(f"\nCurrent month Consumption and Injection:\n{month_df.resample("1ME").sum()}")
 
     # Return the dataframe
     return df
