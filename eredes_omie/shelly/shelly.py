@@ -41,7 +41,19 @@ def download_csv(url, filename, save_path="/workspace/data/shelly/"):
         print(f"An error occurred: {e}")
 
 
-def save_yesterday_solar_production():
+def download_mains_data():
+    """
+    Downloads the CSV file containing the mains data from Shelly's website.
+    """
+    # Download the CSV file containing the solar data
+    download_csv(
+        "http://10.15.40.2/emeter/0/em_data.csv",
+        filename="em_data.main.csv",
+        save_path="/workspace/data/shelly/",
+    )
+
+
+def download_solar_data():
     """
     Downloads yesterday's solar production data from Shelly's website.
     """
@@ -51,6 +63,14 @@ def save_yesterday_solar_production():
         filename="em_data.solar.csv",
         save_path="/workspace/data/shelly/",
     )
+
+
+def save_yesterday_solar_production():
+    """
+    Downloads yesterday's solar production data from Shelly's website.
+    """
+    # Download the CSV file containing the solar data
+    download_solar_data()
 
     # Load the solar data from the downloaded CSV file
     solar_df = pd.read_csv(
@@ -92,7 +112,7 @@ def save_yesterday_solar_production():
 
     # Load the full solar data
     full_solar_df = pd.read_csv(
-        "/workspace/data/solar.csv",
+        "/workspace/data/shelly_solar.csv",
         sep=",",
         names=["timestamp_utc", "solar_Wh"],
         dtype={"timestamp_utc": "str", "solar_Wh": "Float64"},
@@ -113,7 +133,7 @@ def save_yesterday_solar_production():
     full_solar_df.drop_duplicates(subset=["timestamp_utc", "solar_Wh"], inplace=True)
 
     # Save the updated data to a CSV file
-    full_solar_df.to_csv("/workspace/data/solar.csv", index=False)
+    full_solar_df.to_csv("/workspace/data/shelly_solar.csv", index=False)
 
     # Reset the index
     full_solar_df.reset_index(inplace=True, drop=True)
