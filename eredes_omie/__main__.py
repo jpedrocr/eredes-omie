@@ -70,7 +70,7 @@ def main(
         update_losses_profiles(debug=debug)
 
     if history:
-        download_consumption_history(debug=debug)
+        # download_consumption_history(debug=debug)
         process_consumption_history(debug=debug)
 
     if prices:
