@@ -155,8 +155,8 @@ def plot_day_prices(
 
 
 def plot_prices(
-    override: bool = False,
     start_date: str = None,
+    override: bool = False,
     debug: bool = False,
 ) -> str:
     """

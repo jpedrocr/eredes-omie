@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import shutil
 
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
@@ -8,7 +9,7 @@ import seaborn as sns
 
 import providers.repsol as repsol
 
-def plot_weekly_energy_consumption(debug: bool = False) -> None:
+def weekly_energy_consumption(debug: bool = False) -> None:
     """
     Plots the weekly energy consumption for the current month.
     """
@@ -220,3 +221,14 @@ def plot_weekly_energy_consumption(debug: bool = False) -> None:
     # Save the current plot as a PNG image at the specified path
     plt.savefig("/workspace/weekly_energy.png")
     plt.show()
+
+
+def providers_indexed_prices(
+    start_date: str = None, override: bool = False, debug: bool = False
+) -> None:
+    """
+    Plot the Repsol prices and save the plot to the workspace.
+    """
+    location = repsol.plot_prices(start_date=start_date, override=override, debug=debug)
+    if location != "":
+        shutil.copy(location, "/workspace/repsol_latest_prices.png")
