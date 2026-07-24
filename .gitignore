@@ -168,3 +168,6 @@ data/
 
 # Apple files
 .DS_Store
+
+# Artefactos do graphify (grafo, cache, HTML) — regeneráveis, não versionar.
+graphify-out/
