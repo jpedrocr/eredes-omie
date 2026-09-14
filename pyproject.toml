@@ -16,6 +16,9 @@ matplotlib = "^3.8.4"
 seaborn = "^0.13.2"
 tqdm = "^4.66.2"
 h11 = ">=0.16"
+tornado = ">=6.5.8"
+pillow = ">=12.3.0"
+urllib3 = ">=2.7.0"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.4"
